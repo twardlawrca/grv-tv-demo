@@ -1,0 +1,2685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>RCA Greenville — Nursing Station</title>
+  <style>
+    :root {
+      --navy:        #0C3853;
+      --navy-deep:   #082638;
+      --navy-soft:   #154467;
+      --gold:        #C69C3C;
+      --gold-soft:   #E6B85C;
+      --white:       #FFFFFF;
+      --white-dim:   rgba(255,255,255,0.82);
+      --white-faint: rgba(255,255,255,0.55);
+      --teal:        #4A9CA8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      cursor: none;
+    }
+    body {
+      display: flex; flex-direction: column;
+      background:
+        radial-gradient(ellipse at top right, var(--navy-soft) 0%, transparent 55%),
+        radial-gradient(ellipse at bottom left, var(--navy-deep) 0%, transparent 60%),
+        var(--navy);
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────── */
+    .header {
+      flex: 0 0 auto;
+      padding: 1.8vh 3vw;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid var(--gold);
+      background: rgba(8,38,56,0.4);
+    }
+    .brand { display: flex; align-items: center; gap: 1.2vw; }
+    .brand-icon {
+      height: 8.5vh; min-height: 64px; max-height: 110px;
+      width: auto;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.35));
+    }
+    .brand-text {
+      color: var(--white); font-weight: 700;
+      font-size: 1.55vw; letter-spacing: 0.04em; line-height: 1.0;
+      white-space: nowrap;
+    }
+    .brand-text .of { font-weight: 400; font-style: italic; letter-spacing: 0.01em; }
+    .clock { text-align: right; }
+    .clock-time {
+      font-size: 2.4vw; font-weight: 200; letter-spacing: -0.02em;
+      line-height: 1.0; font-family: 'Consolas', 'Monaco', monospace;
+    }
+    .clock-date { font-size: 0.85vw; color: var(--white-dim); margin-top: 0.4vh; letter-spacing: 0.04em; }
+
+    /* ── SIDE TAG (top-left badge so techs know which TV they're at) ── */
+    .side-tag {
+      position: absolute; top: 1.0vh; left: 50%; transform: translateX(-50%);
+      padding: 0.3vh 0.8vw; background: rgba(198,156,60,0.18);
+      color: var(--gold); font-size: 0.7vw; font-weight: 700;
+      letter-spacing: 0.32em; border-radius: 2px; z-index: 5;
+    }
+
+    /* ── PANEL CONTAINER ────────────────────────────────────────── */
+    .panel-area { flex: 1 1 auto; position: relative; overflow: hidden; z-index: 1; }
+    .panel {
+      position: absolute; inset: 0;
+      padding: 4vh 6vw;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      opacity: 0;
+      transform: scale(1.015) translateY(0.8vh);
+      transition: opacity 1.3s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 2.6s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+    .panel.active {
+      opacity: 1;
+      transform: scale(1.0) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* ── AMBIENT BG ANIMATION (v1.22) ─────────────────────────────
+       Slow drifting gradient overlay. Keeps the navy bg from feeling
+       static during long single-panel views (e.g. the 195-second
+       breath exercise on the left-side TV). Subtle on purpose. */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 20%, rgba(74,156,168,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 60% at 75% 80%, rgba(198,156,60,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+      animation: ambientDrift 38s ease-in-out infinite alternate;
+    }
+    @keyframes ambientDrift {
+      0%   { transform: translate(0, 0)      scale(1.00); opacity: 0.85; }
+      50%  { transform: translate(-2vw, 1vh) scale(1.04); opacity: 1.00; }
+      100% { transform: translate(2vw, -1vh) scale(1.02); opacity: 0.90; }
+    }
+    .header, .panel-area, .footer { position: relative; z-index: 1; }
+
+    /* ── NEW PANELS (v1.22) ───────────────────────────────────── */
+    /* Photo tour with ken burns */
+    .panel-photo { padding: 0; justify-content: flex-end; overflow: hidden; }
+    .panel-photo .photo-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      transform: scale(1.08);
+      transition: transform 18s ease-out, background-image 1.6s ease-in-out;
+      z-index: 0;
+    }
+    .panel-photo.active .photo-bg { transform: scale(1.20); }
+    .panel-photo::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top,
+        rgba(8,38,56,0.92) 0%, rgba(8,38,56,0.65) 35%,
+        rgba(8,38,56,0.20) 60%, rgba(8,38,56,0.05) 100%);
+      z-index: 1;
+    }
+    .panel-photo .photo-caption {
+      position: relative; z-index: 2;
+      padding: 0 6vw 6vh 6vw; width: 100%; text-align: left;
+    }
+    .panel-photo .photo-caption .eyebrow {
+      font-size: 1.0vw; letter-spacing: 0.4em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 1.2vh; font-weight: 700;
+    }
+    .panel-photo .photo-caption h1 {
+      font-size: 4.4vw; font-weight: 200; line-height: 1.05;
+      max-width: 70%; letter-spacing: -0.01em;
+    }
+    .panel-photo .photo-caption h1 strong { font-weight: 700; }
+    .panel-photo .photo-caption .sub {
+      font-size: 1.3vw; color: var(--white-dim);
+      margin-top: 1.5vh; max-width: 60%; line-height: 1.5;
+    }
+
+    /* Quote spotlight (oversized cinematic serif) */
+    .panel-quote { justify-content: center; }
+    .panel-quote .quote-mark-big {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 14vw; line-height: 0.7;
+      color: var(--gold); opacity: 0.30; margin-bottom: -3vh;
+    }
+    .panel-quote .quote-text {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 3.4vw; font-style: italic; font-weight: 400;
+      color: var(--white); max-width: 70vw; line-height: 1.35;
+      letter-spacing: -0.005em; margin-bottom: 4vh;
+    }
+    .panel-quote .quote-attribution {
+      font-size: 1.1vw; color: var(--gold-soft);
+      letter-spacing: 0.3em; text-transform: uppercase; font-style: normal;
+    }
+    .panel-quote .quote-attribution::before { content: '— '; margin-right: 0.4vw; }
+
+    /* Connect with RCA (social handles mini) */
+    .panel-connect { justify-content: center; }
+    .panel-connect .connect-eyebrow {
+      font-size: 1.1vw; letter-spacing: 0.4em; color: var(--gold);
+      text-transform: uppercase; font-weight: 700; margin-bottom: 1.5vh;
+    }
+    .panel-connect h1 {
+      font-size: 4.2vw; font-weight: 200; margin-bottom: 1vh;
+      letter-spacing: -0.01em;
+    }
+    .panel-connect h1 strong { font-weight: 700; }
+    .panel-connect .connect-sub {
+      font-size: 1.3vw; color: var(--white-dim);
+      margin-bottom: 4vh; font-style: italic;
+    }
+    .panel-connect .social-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2vh 3vw;
+      max-width: 72vw;
+      margin: 0 auto;
+    }
+    .panel-connect .social-pill {
+      display: flex; align-items: center; gap: 1vw;
+      padding: 1.8vh 2.2vw;
+      background: rgba(255,255,255,0.05);
+      border: 0.15vh solid rgba(198,156,60,0.30);
+      border-radius: 1vh;
+    }
+    .panel-connect .social-pill .sp-icon {
+      flex: 0 0 auto; width: 4vw; height: 4vw;
+      min-width: 50px; min-height: 50px;
+      border-radius: 0.7vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .panel-connect .social-pill .sp-icon svg { width: 60%; height: 60%; fill: var(--white); }
+    .panel-connect .social-pill.x  .sp-icon { background: rgba(255,255,255,0.15); }
+    .panel-connect .social-pill.ig .sp-icon { background: linear-gradient(135deg, #FEDA77 0%, #F58529 25%, #DD2A7B 50%, #8134AF 75%, #515BD4 100%); }
+    .panel-connect .social-pill.fb .sp-icon { background: #1877F2; }
+    .panel-connect .social-pill.tt .sp-icon { background: #000000; }
+    .panel-connect .social-pill .sp-body { text-align: left; }
+    .panel-connect .social-pill .sp-platform {
+      font-size: 0.95vw; color: var(--white-faint);
+      letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.3vh;
+    }
+    .panel-connect .social-pill .sp-handle {
+      font-size: 1.35vw; color: var(--gold-soft); font-weight: 700;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+
+    /* Did You Know mini */
+    .panel-dyk-mini { justify-content: center; }
+    .panel-dyk-mini .dyk-eyebrow {
+      font-size: 1.2vw; letter-spacing: 0.4em; color: var(--gold);
+      text-transform: uppercase; font-weight: 700; margin-bottom: 2.5vh;
+    }
+    .panel-dyk-mini .dyk-icon { font-size: 5.5vw; line-height: 1; margin-bottom: 2.5vh; }
+    .panel-dyk-mini .dyk-fact {
+      font-size: 2.6vw; font-weight: 300; line-height: 1.4;
+      max-width: 72vw; letter-spacing: -0.005em; margin-bottom: 3.5vh;
+    }
+    .panel-dyk-mini .dyk-fact strong { font-weight: 700; color: var(--gold-soft); }
+    .panel-dyk-mini .dyk-source {
+      font-size: 1.05vw; color: var(--white-faint);
+      font-style: italic; letter-spacing: 0.05em;
+    }
+    .panel-dyk-mini .dyk-source::before { content: '— Source: '; }
+
+    /* ── TIKTOK FEED PANEL (v1.22 round 6) ───────────────────── */
+    .panel-tiktok {
+      padding: 2vh 4vw;
+      display: grid !important;
+      grid-template-columns: 1fr auto 1fr;
+      grid-template-rows: auto 1fr auto;
+      gap: 1vh 2vw;
+      align-items: center;
+      justify-items: center;
+      position: relative;
+    }
+    .panel-tiktok .tt-header {
+      grid-column: 1 / -1; grid-row: 1;
+      display: flex; align-items: center; justify-content: center;
+      gap: 1.2vw;
+    }
+    .panel-tiktok .tt-eyebrow {
+      color: var(--gold); font-size: 1.0vw;
+      letter-spacing: 0.45em; text-transform: uppercase; font-weight: 700;
+    }
+    .panel-tiktok .tt-logo {
+      width: 2.6vw; height: 2.6vw; min-width: 36px; min-height: 36px;
+      background: #000; border-radius: 0.5vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .panel-tiktok .tt-logo svg { width: 65%; height: 65%; fill: var(--white); }
+    .panel-tiktok h2 { font-size: 2.4vw; font-weight: 300; letter-spacing: -0.01em; }
+    .panel-tiktok h2 strong { font-weight: 700; }
+    .panel-tiktok .tt-rail {
+      grid-row: 2;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--white-faint); font-size: 0.95vw;
+      text-transform: uppercase; letter-spacing: 0.3em; gap: 1vh;
+    }
+    .panel-tiktok .tt-rail-left  { grid-column: 1; }
+    .panel-tiktok .tt-rail-right { grid-column: 3; }
+    .panel-tiktok .tt-rail-icon { font-size: 2.5vw; color: var(--gold-soft); opacity: 0.5; }
+    .panel-tiktok .tt-phone {
+      grid-column: 2; grid-row: 2;
+      position: relative;
+      width: 30vw; max-width: 420px;
+      height: 76vh; max-height: 800px;
+      background:
+        linear-gradient(180deg,
+          #404040 0%, #5a5a5a 12%, #2a2a2a 50%, #5a5a5a 88%, #404040 100%);
+      border-radius: 4.5vh; padding: 1.6vh;
+      box-shadow:
+        0 6vh 14vh rgba(0,0,0,0.65),
+        0 2vh 6vh rgba(0,0,0,0.45),
+        inset 0 0 0 0.15vh rgba(255,255,255,0.12),
+        0 0 0 0.18vh rgba(254,44,85,0.18),
+        0 0 8vh rgba(254,44,85,0.25),
+        0 0 14vh rgba(37,244,238,0.10);
+      display: flex; flex-direction: column;
+    }
+    .panel-tiktok .tt-phone::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 4.5vh;
+      background: linear-gradient(135deg,
+        rgba(255,255,255,0.10) 0%,
+        rgba(255,255,255,0.02) 35%,
+        transparent 50%,
+        transparent 70%,
+        rgba(255,255,255,0.06) 100%);
+      pointer-events: none; z-index: 4;
+    }
+    .panel-tiktok .tt-phone-notch {
+      position: absolute; top: 2.4vh; left: 50%; transform: translateX(-50%);
+      width: 32%; height: 2.8vh; background: #000;
+      border-radius: 1.4vh; z-index: 6;
+      box-shadow: inset 0 0.12vh 0.3vh rgba(255,255,255,0.04);
+    }
+    .panel-tiktok .tt-phone-notch::after {
+      content: ''; position: absolute;
+      right: 1.2vh; top: 50%; transform: translateY(-50%);
+      width: 0.6vh; height: 0.6vh; background: #1a1a1a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0.1vh rgba(80,80,80,0.4);
+    }
+    .panel-tiktok .tt-phone-screen {
+      flex: 1; border-radius: 3.4vh; overflow: hidden;
+      background: #000; position: relative;
+    }
+    .panel-tiktok .tt-home-indicator {
+      position: absolute; bottom: 0.9vh; left: 50%; transform: translateX(-50%);
+      width: 38%; height: 0.5vh;
+      background: rgba(255,255,255,0.85);
+      border-radius: 0.25vh; z-index: 6; pointer-events: none;
+    }
+    .panel-tiktok .tt-phone-screen .tiktok-embed,
+    .panel-tiktok .tt-phone-screen iframe[src*="tiktok"],
+    .panel-tiktok .tt-phone-screen iframe {
+      width: 100% !important; height: 100% !important;
+      min-width: 0 !important; max-width: 100% !important;
+      border: none !important; border-radius: 2vh !important;
+      margin: 0 !important; display: block;
+    }
+    .panel-tiktok .tt-loading {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--white-dim);
+      background: linear-gradient(135deg, #FE2C55 0%, #25F4EE 100%);
+      z-index: 1; transition: opacity 0.6s ease;
+    }
+    .panel-tiktok .tt-loading.hidden { opacity: 0; pointer-events: none; }
+    .panel-tiktok .tt-loading-icon { font-size: 5vw; color: var(--white); animation: ttPulseNs 1.5s ease-in-out infinite; }
+    @keyframes ttPulseNs {
+      0%, 100% { opacity: 1; transform: scale(1.0); }
+      50%      { opacity: 0.5; transform: scale(1.1); }
+    }
+    .panel-tiktok .tt-loading-text {
+      margin-top: 2vh; font-size: 1.1vw; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--white); font-weight: 600;
+    }
+    .panel-tiktok .tt-footer {
+      grid-column: 1 / -1; grid-row: 3;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1vh; padding-bottom: 1vh;
+    }
+    .panel-tiktok .tt-handle {
+      font-size: 1.3vw; color: var(--gold-soft);
+      font-weight: 700; font-family: 'Consolas', 'Monaco', monospace;
+    }
+    .panel-tiktok .tt-position {
+      font-size: 0.85vw; color: var(--white-faint);
+      letter-spacing: 0.25em; text-transform: uppercase;
+    }
+
+    /* ── FACEBOOK FEED PANEL (v1.22 round 7) ────────────────── */
+    .panel-fb {
+      padding: 5vh 6vw 4vh 6vw;
+      display: flex !important; flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .panel-fb .fb-header {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1.2vw; margin-bottom: 1.5vh;
+    }
+    .panel-fb .fb-eyebrow {
+      color: var(--gold); font-size: 1.0vw;
+      letter-spacing: 0.45em; text-transform: uppercase; font-weight: 700;
+    }
+    .panel-fb .fb-logo {
+      width: 2.6vw; height: 2.6vw; min-width: 36px; min-height: 36px;
+      background: #1877F2; border-radius: 0.5vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .panel-fb .fb-logo svg { width: 75%; height: 75%; fill: var(--white); }
+    .panel-fb h2 { font-size: 2.6vw; font-weight: 300; letter-spacing: -0.01em; }
+    .panel-fb h2 strong { font-weight: 700; }
+    .panel-fb .fb-sub {
+      font-size: 1.2vw; color: var(--white-dim);
+      margin-bottom: 2vh; font-style: italic;
+    }
+    .panel-fb .fb-card-wrap {
+      flex: 1; width: 100%; max-width: 540px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      min-height: 0;
+    }
+    .panel-fb .fb-card {
+      background: #FFFFFF; border-radius: 1.2vh;
+      width: 100%;
+      height: 100%;
+      max-height: 58vh;
+      overflow: hidden;
+      box-shadow: 0 3vh 8vh rgba(0,0,0,0.4), 0 0 0 0.2vh rgba(24,119,242,0.20), 0 0 5vh rgba(24,119,242,0.20);
+      display: flex; align-items: stretch; position: relative;
+    }
+    .panel-fb .fb-card iframe {
+      width: 100% !important; height: 100% !important;
+      border: none !important; display: block;
+    }
+    .panel-fb .fb-loading {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--white);
+      background: linear-gradient(135deg, #1877F2 0%, #0A1F44 100%);
+      z-index: 5; transition: opacity 0.6s ease;
+    }
+    .panel-fb .fb-loading.hidden { opacity: 0; pointer-events: none; }
+    .panel-fb .fb-loading-icon {
+      font-size: 5vw; font-weight: 700;
+      font-family: 'Georgia', serif; color: var(--white);
+      animation: fbPulseNs 1.5s ease-in-out infinite;
+    }
+    @keyframes fbPulseNs {
+      0%, 100% { opacity: 1; transform: scale(1.0); }
+      50%      { opacity: 0.5; transform: scale(1.1); }
+    }
+    .panel-fb .fb-loading-text {
+      margin-top: 2vh; font-size: 1.1vw; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--white); font-weight: 600;
+    }
+    .panel-fb .fb-footer {
+      margin-top: 1.5vh;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.8vh;
+    }
+    .panel-fb .fb-handle {
+      font-size: 1.2vw; color: var(--gold-soft);
+      font-weight: 700; font-family: 'Consolas', 'Monaco', monospace;
+    }
+    .panel-fb .fb-position {
+      font-size: 0.85vw; color: var(--white-faint);
+      letter-spacing: 0.25em; text-transform: uppercase;
+    }
+
+    .panel-eyebrow {
+      font-size: 1.0vw; letter-spacing: 0.32em;
+      color: var(--gold); font-weight: 600; margin-bottom: 1.5vh;
+    }
+    .panel-h1 {
+      font-size: 4.0vw; font-weight: 700;
+      letter-spacing: 0.01em; line-height: 1.05; margin-bottom: 1.5vh;
+    }
+    .panel-h1.big { font-size: 5.4vw; }
+    .panel-sub {
+      font-size: 1.5vw; color: var(--white-dim);
+      letter-spacing: 0.02em; max-width: 70vw; line-height: 1.45;
+    }
+
+    /* ── WELCOME ──────────────────────────────────────────────── */
+    .panel-welcome .welcome-badge {
+      width: 50vw; max-width: 980px; height: auto;
+      margin-bottom: 3vh;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
+    }
+    .panel-welcome .tagline {
+      font-size: 1.7vw; color: var(--gold-soft);
+      font-style: italic; margin-top: 2vh; letter-spacing: 0.02em;
+    }
+
+    /* ── TODAY (weather + glance -- enlarged for patient readability) ── */
+    .panel-today .today-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 3vw; width: 88vw; max-width: 1800px; height: 64vh;
+      align-items: stretch; margin-top: 1vh;
+    }
+    .today-block {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(198,156,60,0.3);
+      border-radius: 14px; padding: 3.2vh 2.6vw;
+      display: flex; flex-direction: column; text-align: left;
+    }
+    .weather-block { justify-content: space-between; }
+    .today-label {
+      font-size: 1.3vw; letter-spacing: 0.24em;
+      color: var(--gold); font-weight: 700; margin-bottom: 0.5vh;
+    }
+    .weather-main { display: flex; align-items: center; gap: 1.8vw; }
+    .weather-temp { font-size: 8vw; font-weight: 200; color: var(--white); line-height: 0.95; }
+    .weather-side { display: flex; flex-direction: column; align-items: flex-start; }
+    .weather-cond { font-size: 2.2vw; color: var(--white); line-height: 1.1; font-weight: 400; }
+    .weather-feels { font-size: 1.35vw; color: var(--white-faint); margin-top: 0.6vh; }
+    .weather-hilo { font-size: 1.65vw; color: var(--white-dim); margin-top: 0.9vh; }
+    .weather-hilo .hl-hi { color: var(--white); font-weight: 600; margin-right: 1.4vw; }
+    .weather-hilo .hl-lo { color: var(--white-faint); font-weight: 600; }
+    .weather-loc  { color: var(--white-faint); letter-spacing: 0.04em; }
+    .weather-extras {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1vw;
+      padding: 1.6vh 0; border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .weather-extra { text-align: center; }
+    .we-label { display: block; font-size: 0.95vw; letter-spacing: 0.16em; color: var(--gold-soft); font-weight: 700; }
+    .we-val   { display: block; font-size: 1.95vw; color: var(--white); margin-top: 0.5vh; font-weight: 600; }
+    .weather-forecast { display: flex; flex-direction: column; gap: 0.4vh; }
+    .wf-day { display: flex; align-items: center; gap: 1vw; font-size: 1.55vw; color: var(--white-dim); }
+    .wf-icon { font-size: 2vw; width: 2.6vw; text-align: center; }
+    .wf-dayname { color: var(--gold-soft); font-weight: 700; letter-spacing: 0.08em; width: 5.5vw; }
+    .wf-hilo { flex: 1 1 auto; color: var(--white); }
+    .wf-hilo b { font-weight: 700; }
+    .wf-rain { width: 10vw; text-align: right; color: #7fb0c0; font-size: 1.3vw; }
+    .weather-sun {
+      display: flex; justify-content: space-between;
+      padding-top: 1.4vh; border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 1.45vw; color: var(--white-dim);
+    }
+    .sun-label { color: var(--gold-soft); font-weight: 600; letter-spacing: 0.05em; margin-right: 0.4vw; }
+    .glance-row {
+      display: flex; align-items: center; gap: 1.5vw;
+      padding: 1.5vh 0; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;
+    }
+    .glance-row:last-child { border-bottom: none; }
+    .glance-time {
+      color: var(--gold-soft); font-family: 'Consolas', monospace;
+      font-size: 1.75vw; font-weight: 600; width: 9.5vw; flex: 0 0 auto;
+    }
+    .glance-event { color: var(--white); font-size: 1.75vw; }
+    .glance-pathway-tag {
+      font-size: 1.1vw; letter-spacing: 0.2em;
+      color: var(--gold-soft); margin-bottom: 0.6vh;
+      font-style: italic; text-transform: uppercase;
+    }
+    .glance-row.glance-now {
+      background: rgba(198,156,60,0.10);
+      border-left: 4px solid var(--gold);
+      padding-left: 1vw;
+      margin-left: -1vw;
+    }
+    .glance-now .glance-time {
+      color: var(--gold-soft); font-weight: 800; letter-spacing: 0.06em;
+    }
+    .glance-asof {
+      font-size: 0.95vw; color: var(--white-faint);
+      margin-top: 0.8vh; font-style: italic; text-align: right;
+    }
+
+    /* ── AFFIRMATION (balanced quote marks + true-centered) ────── */
+    .panel-affirm { justify-content: center; }
+    .panel-affirm .quote-mark {
+      font-size: 8vw; color: var(--gold); opacity: 0.42;
+      line-height: 0.6; font-family: Georgia, serif;
+      margin: 0;
+    }
+    .panel-affirm .quote-mark.open  { margin-bottom: 1.5vh; }
+    .panel-affirm .quote-mark.close {
+      margin-top: 1.5vh;
+      transform: scaleX(-1) scaleY(-1); /* flip horiz+vert for a true closing quote shape */
+    }
+    .panel-affirm .quote {
+      font-size: 3.2vw; font-style: italic; color: var(--white);
+      font-weight: 300; line-height: 1.35; max-width: 80vw; letter-spacing: 0.01em;
+    }
+
+    /* ── FEATURED VIDEO ───────────────────────────────────────── */
+    .panel-video { padding: 0; background: var(--navy-deep); }
+    .panel-video .video-frame {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .panel-video video { max-width: 100%; max-height: 100%; }
+    .panel-video .placeholder {
+      width: 80%; max-width: 1200px; aspect-ratio: 16/9;
+      background: linear-gradient(135deg, var(--navy-soft) 0%, var(--navy-deep) 100%);
+      border: 2px solid var(--gold);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 8px;
+    }
+    .placeholder-icon { font-size: 6vw; color: var(--gold); margin-bottom: 2vh; }
+    .placeholder-title { font-size: 2.2vw; font-weight: 700; color: var(--white); letter-spacing: 0.02em; margin-bottom: 1.2vh; }
+    .placeholder-text { font-size: 1.2vw; color: var(--white-dim); max-width: 50vw; line-height: 1.4; }
+    .placeholder-tag {
+      font-size: 0.7vw; color: var(--white-faint); margin-top: 2.5vh;
+      letter-spacing: 0.18em; text-transform: uppercase; font-style: italic;
+    }
+
+    /* ── WELLNESS (3-minute guided breath: 4-7-8 method) ────────── */
+    .panel-wellness .breath-circle {
+      width: 28vh; height: 28vh; min-width: 240px; min-height: 240px;
+      border-radius: 50%; border: 4px solid var(--teal); margin-bottom: 3vh;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.4s ease, border-color 0.4s ease;
+    }
+    .panel-wellness.active .breath-circle {
+      animation: breath478 19s ease-in-out infinite;
+    }
+    .breath-circle-inner {
+      width: 50%; height: 50%; border-radius: 50%;
+      background: var(--teal); opacity: 0.45;
+      transition: opacity 1s ease;
+    }
+    .panel-wellness.active .breath-circle-inner {
+      animation: breathInner478 19s ease-in-out infinite;
+    }
+    /* 4-second inhale, 7-second hold, 8-second exhale (Dr. Andrew Weil's 4-7-8 method) */
+    @keyframes breath478 {
+      0%   { transform: scale(0.80); border-color: var(--teal); }  /* start of inhale */
+      21%  { transform: scale(1.20); border-color: var(--gold); }  /* end of 4s inhale */
+      58%  { transform: scale(1.20); border-color: var(--gold); }  /* end of 7s hold */
+      100% { transform: scale(0.80); border-color: var(--teal); }  /* end of 8s exhale */
+    }
+    @keyframes breathInner478 {
+      0%   { opacity: 0.30; }
+      21%  { opacity: 0.70; }
+      58%  { opacity: 0.70; }
+      100% { opacity: 0.30; }
+    }
+    .breath-phase {
+      font-size: 1.4vw; color: var(--gold-soft);
+      letter-spacing: 0.3em; font-weight: 600;
+      text-transform: uppercase; margin-bottom: 7vh;
+      min-height: 2vw;
+    }
+    .panel-wellness .breath-circle { margin-top: 2vh; }
+    .breath-countdown {
+      font-family: 'Consolas', monospace;
+      font-size: 1.8vw; color: var(--white);
+      letter-spacing: 0.06em; margin-top: 2vh;
+      font-weight: 200;
+    }
+    .breath-countdown .label {
+      font-size: 0.7vw; color: var(--white-faint);
+      letter-spacing: 0.22em; font-weight: 600;
+      display: block; margin-bottom: 0.4vh;
+    }
+
+    /* ── LEVELS OF CARE (staggered fade-in) ───────────────────── */
+    .panel-levels .levels-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 1.5vw; width: 88vw; max-width: 1700px; margin-top: 3vh;
+    }
+    .level-card {
+      background: rgba(255,255,255,0.05); border-top: 4px solid var(--gold);
+      border-radius: 6px; padding: 3vh 1vw; text-align: center;
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .panel-levels.active .level-card { opacity: 1; transform: translateY(0); }
+    .panel-levels.active .level-card:nth-child(1) { transition-delay: 0.20s; }
+    .panel-levels.active .level-card:nth-child(2) { transition-delay: 0.55s; }
+    .panel-levels.active .level-card:nth-child(3) { transition-delay: 0.90s; }
+    .panel-levels.active .level-card:nth-child(4) { transition-delay: 1.25s; }
+    .panel-levels.active .level-card:nth-child(5) { transition-delay: 1.60s; }
+    .level-icon  { font-size: 3.2vw; margin-bottom: 1.2vh; display: block; }
+    .level-title { font-size: 1.5vw; font-weight: 700; color: var(--white); margin-bottom: 0.8vh; letter-spacing: 0.02em; }
+    .level-desc  { font-size: 0.85vw; color: var(--white-faint); line-height: 1.4; }
+
+    /* ── INFO PANELS (alumni / family / generic) ──────────────── */
+    .panel-info .info-stat {
+      font-size: 6vw; font-weight: 200; color: var(--gold);
+      line-height: 1.0; margin-bottom: 1vh;
+    }
+
+    /* ── STATS (animated count-up tally) ──────────────────────── */
+    .panel-stats .stats-row {
+      display: flex; gap: 4vw; margin-top: 4vh; justify-content: center;
+    }
+    .stat-cell {
+      text-align: center; padding: 0 2vw;
+      border-right: 1px solid rgba(198,156,60,0.3);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num   {
+      font-size: 5.0vw; font-weight: 200; color: var(--gold);
+      line-height: 1.0; font-variant-numeric: tabular-nums;
+    }
+    .stat-label {
+      font-size: 1.0vw; color: var(--white-dim);
+      margin-top: 1.5vh; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .accred-row { margin-top: 5vh; font-size: 1.1vw; color: var(--white-faint); letter-spacing: 0.04em; }
+    .accred-row strong { color: var(--white); font-weight: 600; }
+
+    /* ── 12 STEPS (each step fades in sequentially) ─────────────── */
+    .panel-steps .steps-intro {
+      font-size: 1.2vw; color: var(--white-dim); font-style: italic;
+      max-width: 75vw; line-height: 1.45; margin-bottom: 2vh;
+    }
+    .panel-steps .steps-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.8vh 2vw; width: 88vw; max-width: 1700px; margin-top: 1vh;
+      text-align: left;
+    }
+    .panel-steps .step-row {
+      display: flex; align-items: flex-start; gap: 0.8vw;
+      padding: 0.6vh 0;
+      opacity: 0; transform: translateX(-12px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .panel-steps.active .step-row { opacity: 1; transform: translateX(0); }
+    /* Stagger: ~3.5 sec per step, spread over 42 sec (matches panel duration) */
+    .panel-steps.active .step-row:nth-child(1)  { transition-delay: 0.4s; }
+    .panel-steps.active .step-row:nth-child(2)  { transition-delay: 3.9s; }
+    .panel-steps.active .step-row:nth-child(3)  { transition-delay: 7.4s; }
+    .panel-steps.active .step-row:nth-child(4)  { transition-delay: 10.9s; }
+    .panel-steps.active .step-row:nth-child(5)  { transition-delay: 14.4s; }
+    .panel-steps.active .step-row:nth-child(6)  { transition-delay: 17.9s; }
+    .panel-steps.active .step-row:nth-child(7)  { transition-delay: 21.4s; }
+    .panel-steps.active .step-row:nth-child(8)  { transition-delay: 24.9s; }
+    .panel-steps.active .step-row:nth-child(9)  { transition-delay: 28.4s; }
+    .panel-steps.active .step-row:nth-child(10) { transition-delay: 31.9s; }
+    .panel-steps.active .step-row:nth-child(11) { transition-delay: 35.4s; }
+    .panel-steps.active .step-row:nth-child(12) { transition-delay: 38.9s; }
+    .panel-steps .step-num {
+      font-family: 'Consolas', monospace; font-size: 1.5vw;
+      font-weight: 800; color: var(--gold);
+      min-width: 2.2vw; line-height: 1.15;
+    }
+    .panel-steps .step-text {
+      font-size: 0.95vw; color: var(--white); line-height: 1.35;
+    }
+
+    /* ── FLOOR SPACES (per-floor wayfinding) ──────────────────── */
+    .panel-spaces .spaces-table {
+      width: 78vw; max-width: 1400px;
+      border-collapse: collapse; margin-top: 3vh;
+    }
+    .spaces-table tr {
+      border-bottom: 1px solid rgba(198,156,60,0.25);
+    }
+    .spaces-table tr:last-child { border-bottom: none; }
+    .spaces-table td { padding: 1.8vh 1.5vw; vertical-align: middle; }
+    .spaces-table td.room {
+      font-family: 'Consolas','Monaco',monospace;
+      font-size: 2.4vw; font-weight: 700; color: var(--gold);
+      letter-spacing: 0.04em; width: 22%; white-space: nowrap;
+    }
+    .spaces-table td.name {
+      font-size: 1.8vw; color: var(--white); font-weight: 600;
+    }
+    .spaces-table td.type {
+      font-size: 1.1vw; color: var(--white-faint);
+      font-style: italic; text-align: right;
+    }
+
+    /* ── HELP / STAFF ATTENTION (RED, urgent — per Tevin) ────────── */
+    .panel-help {
+      background: radial-gradient(ellipse at center, #C13030 0%, #8B1A1A 80%);
+    }
+    .help-icon {
+      width: 16vh; height: 16vh; min-width: 140px; min-height: 140px;
+      border-radius: 50%; border: 4px solid #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4vh; background: rgba(255,255,255,0.12);
+      animation: jiggle 1.8s ease-in-out infinite;
+    }
+    .help-icon-glyph { font-size: 9vh; color: #FFFFFF; line-height: 1; }
+    @keyframes jiggle {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      15%      { transform: rotate(-8deg) scale(1.05); }
+      30%      { transform: rotate(8deg) scale(1.05); }
+      45%      { transform: rotate(-5deg) scale(1.02); }
+      60%      { transform: rotate(5deg) scale(1.02); }
+      75%      { transform: rotate(-2deg) scale(1.0); }
+    }
+    .help-headline {
+      font-size: 4.4vw; font-weight: 800; color: #FFFFFF;
+      margin-bottom: 2vh; letter-spacing: 0.02em;
+      animation: helpFlash 1.6s ease-in-out infinite;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.4);
+    }
+    @keyframes helpFlash {
+      0%, 100% { opacity: 1.0; transform: scale(1.0); }
+      50%      { opacity: 0.55; transform: scale(0.97); }
+    }
+    .help-body {
+      font-size: 1.9vw; color: rgba(255,255,255,0.95);
+      letter-spacing: 0.02em; line-height: 1.45; max-width: 70vw;
+    }
+    .help-emph {
+      color: #FFE08A; font-weight: 800; letter-spacing: 0.04em;
+      text-decoration: underline; text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
+    }
+
+    /* ── FOOTER (affirmation TRUE-centered + help widget overlaid right) ─── */
+    .footer {
+      flex: 0 0 auto;
+      display: flex; align-items: stretch;
+      border-top: 2px solid var(--gold); background: rgba(8,38,56,0.7);
+      position: relative;
+    }
+    .footer-affirm {
+      flex: 1 1 auto; display: flex; align-items: center; justify-content: center;
+      padding: 1.6vh 3vw; min-height: 7vh;
+    }
+    .footer-affirm-text {
+      font-size: 1.1vw; font-style: italic; color: var(--white-dim);
+      letter-spacing: 0.02em; text-align: center;
+      transition: opacity 1s ease-in-out; max-width: 60vw;
+    }
+    .footer-help {
+      position: absolute; right: 0; top: 0; bottom: 0;
+      background: linear-gradient(135deg, var(--gold) 0%, #A67E2A 100%);
+      display: flex; align-items: center;
+      padding: 1.6vh 1.8vw; gap: 0.8vw;
+      color: var(--navy-deep);
+    }
+    .footer-help-label { font-size: 0.78vw; letter-spacing: 0.22em; color: rgba(8,38,56,0.75); font-weight: 700; }
+    .footer-help-text  { font-size: 1.15vw; font-weight: 700; color: var(--navy-deep); letter-spacing: 0.02em; line-height: 1.1; }
+
+    /* ── ASSET INFO BAR ───────────────────────────────────────── */
+    .asset-info {
+      flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      gap: 1.4vw; padding: 0.5vh 1.5vw;
+      background: rgba(8,38,56,0.95);
+      border-top: 1px solid rgba(198,156,60,0.18);
+      font-family: 'Consolas','Monaco',monospace;
+      font-size: 0.62vw; color: rgba(255,255,255,0.42);
+      letter-spacing: 0.06em;
+    }
+    .asset-cell  { white-space: nowrap; }
+    .asset-label { color: rgba(198,156,60,0.65); font-weight: 700; margin-right: 0.35vw; letter-spacing: 0.12em; }
+    .asset-sep   { color: rgba(255,255,255,0.12); margin: 0 0.4vw; }
+
+    /* ── PANEL INDICATOR DOTS ─────────────────────────────────── */
+    .dots {
+      position: absolute; bottom: 2vh; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 0.7vw; z-index: 10;
+    }
+    .dot {
+      width: 0.7vw; height: 0.7vw; min-width: 8px; min-height: 8px;
+      border-radius: 50%; background: rgba(255,255,255,0.2);
+      transition: background 0.4s;
+    }
+    .dot.active { background: var(--gold); }
+
+    /* ── IT SUPPORT PANEL (v1.22 -- staff-facing) ────────────── */
+    .panel-itsupport { justify-content: center; }
+    .panel-itsupport .it-staff-badge {
+      display: inline-block;
+      background: rgba(198,156,60,0.18); color: var(--gold-soft);
+      font-size: 0.95vw; font-weight: 700;
+      letter-spacing: 0.35em; text-transform: uppercase;
+      padding: 0.6vh 1.6vw; border-radius: 0.5vh;
+      border: 0.1vh solid rgba(198,156,60,0.4); margin-bottom: 2.5vh;
+    }
+    .panel-itsupport h1 {
+      font-size: 4.2vw; font-weight: 200; line-height: 1.0;
+      margin-bottom: 1vh; letter-spacing: -0.01em;
+    }
+    .panel-itsupport h1 strong { font-weight: 700; }
+    .panel-itsupport .it-sub {
+      font-size: 1.3vw; color: var(--white-dim);
+      margin-bottom: 4.5vh; font-style: italic;
+    }
+    .panel-itsupport .it-methods {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2.5vw; width: 100%; max-width: 80vw;
+    }
+    .panel-itsupport .it-method {
+      background: rgba(255,255,255,0.04);
+      border: 0.15vh solid rgba(198,156,60,0.25);
+      border-radius: 1vh; padding: 3vh 2vw;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .panel-itsupport .it-icon {
+      font-size: 3.4vw; line-height: 1; margin-bottom: 1.8vh; color: var(--gold-soft);
+    }
+    .panel-itsupport .it-method-label {
+      font-size: 0.95vw; color: var(--white-faint);
+      letter-spacing: 0.2em; text-transform: uppercase;
+      margin-bottom: 1.2vh; font-weight: 700;
+    }
+    .panel-itsupport .it-method-value {
+      font-size: 1.6vw; color: var(--white); font-weight: 700;
+      margin-bottom: 0.8vh; word-break: break-word; line-height: 1.2;
+    }
+    .panel-itsupport .it-method-note {
+      font-size: 1.0vw; color: var(--gold-soft); line-height: 1.3;
+    }
+
+    /* ===== Meet Your Case Management Team panel (drop-in, self-contained) ===== */
+    .panel-meetcm{flex-direction:column;align-items:center;justify-content:center;padding:4.2vh 4vw;gap:2.2vh;}
+    .mcm-eyebrow{font-size:1.15vw;font-weight:700;letter-spacing:0.42em;text-transform:uppercase;color:#E6B85C;opacity:0.95;}
+    .mcm-title{font-size:4.0vw;font-weight:900;line-height:1.02;color:#FFFFFF;text-align:center;text-shadow:0 0.3vh 2.2vh rgba(0,0,0,0.35);}
+    .mcm-title b{color:#E6B85C;font-weight:900;}
+    .mcm-intro{font-size:1.5vw;font-weight:500;color:rgba(255,255,255,0.82);text-align:center;max-width:64vw;line-height:1.4;}
+    .mcm-hero{width:62vw;max-width:62vw;height:31vh;object-fit:cover;object-position:center 38%;border-radius:1.1vw;border:0.32vw solid #C69C3C;box-shadow:0 1.4vh 4vh rgba(0,0,0,0.45);}
+    .mcm-roster{display:flex;justify-content:center;align-items:flex-start;gap:2.6vw;width:100%;}
+    .mcm-person{display:flex;flex-direction:column;align-items:center;width:16vw;}
+    .mcm-photo{width:8.6vw;height:8.6vw;border-radius:50%;object-fit:cover;object-position:center 30%;border:0.28vw solid #E6B85C;box-shadow:0 0.8vh 2.2vh rgba(0,0,0,0.4);background:#154467;}
+    .mcm-name{margin-top:1.1vh;font-size:1.45vw;font-weight:800;color:#FFFFFF;text-align:center;line-height:1.1;}
+    .mcm-role{margin-top:0.3vh;font-size:0.95vw;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E6B85C;text-align:center;}
+    .mcm-role.is-mgr{color:#C69C3C;}
+    .mcm-foot{margin-top:0.6vh;font-size:1.0vw;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.82);opacity:0.75;}
+  </style>
+<style>
+/* ===== iPhone-realistic social phones (override, 2026-06-04) ===== */
+.panel-tiktok .tt-phone{
+  width:21.5vw; max-width:340px; height:82vh; max-height:880px;
+  background:linear-gradient(145deg,#48484a 0%,#1c1c1e 38%,#070708 62%,#2c2c2e 100%);
+  border-radius:6.2vh; padding:0.8vh;
+  box-shadow:0 5vh 13vh rgba(0,0,0,0.62),0 2vh 5vh rgba(0,0,0,0.40),
+    inset 0 0 0 0.14vh rgba(255,255,255,0.22);
+}
+.panel-tiktok .tt-phone::before{ border-radius:6.2vh;
+  background:linear-gradient(135deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0.03) 28%,transparent 46%,transparent 72%,rgba(255,255,255,0.06) 100%); }
+.panel-tiktok .tt-phone-screen{ border-radius:5.4vh; }
+/* notch -> Dynamic Island */
+.panel-tiktok .tt-phone-notch{ top:2.1vh; width:24%; height:2.5vh; border-radius:1.4vh;
+  background:#000; box-shadow:0 0 0 0.1vh rgba(20,20,20,0.9); }
+.panel-tiktok .tt-phone-notch::after{ content:''; right:16%; left:auto; top:50%; transform:translateY(-50%);
+  width:0.7vh; height:0.7vh; border-radius:50%; background:#0a1414;
+  box-shadow:inset 0 0 0 0.1vh rgba(50,90,90,0.6),0 0 0.4vh rgba(40,140,140,0.5); }
+/* side buttons */
+.panel-tiktok .tt-btn{ position:absolute; z-index:1; border-radius:0.35vh;
+  background:linear-gradient(90deg,#070708,#3a3a3c 60%,#070708); }
+.panel-tiktok .tt-btn-action{ left:-0.45vh; top:19%; width:0.5vh; height:3.2vh; }
+.panel-tiktok .tt-btn-volup{   left:-0.5vh; top:28%; width:0.55vh; height:6vh; }
+.panel-tiktok .tt-btn-voldown{ left:-0.5vh; top:40%; width:0.55vh; height:6vh; }
+.panel-tiktok .tt-btn-power{   right:-0.5vh; top:30%; width:0.55vh; height:9.5vh;
+  background:linear-gradient(270deg,#070708,#3a3a3c 60%,#070708); }
+/* TikTok embed fills the screen */
+.panel-tiktok .tt-phone-screen .tiktok-embed,
+.panel-tiktok .tt-phone-screen iframe{ width:100%!important; height:100%!important;
+  border:0!important; border-radius:5.4vh!important; display:block; }
+/* Facebook: cleaner card, post fully visible */
+.panel-fb .fb-card-wrap{ max-width:430px; }
+.panel-fb .fb-card{ max-height:64vh; border-radius:2.4vh; background:#fff;
+  box-shadow:0 4vh 10vh rgba(0,0,0,0.45),inset 0 0 0 0.12vh rgba(255,255,255,0.5); }
+.panel-fb .fb-card iframe{ width:100%!important; height:100%!important; border:0!important; }
+</style>
+<style>.panel-welcome .panel-sub{display:none;}</style>
+<meta name="robots" content="noindex,nofollow">
+</head>
+<body>
+  <div class="side-tag" id="side-tag">NURSING STATION</div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="brand">
+      <img class="brand-icon" src="Brand-Assets/rca-thumb-10yr-fixed.png" alt="RCA 10 Years">
+      <div class="brand-text">Recovery Centers <span class="of">of</span> America at Greenville</div>
+    </div>
+    <div class="clock">
+      <div class="clock-time" id="clock-time">--:--</div>
+      <div class="clock-date" id="clock-date">--</div>
+    </div>
+  </header>
+
+  <!-- ═══ PANELS — tagged by side: L | R | both ═══ -->
+  <main class="panel-area">
+
+    <!-- WELCOME (both) -->
+    <section class="panel panel-welcome" data-panel="welcome" data-side="both">
+      <img class="welcome-badge" src="Brand-Assets/rca-logo-grv-white.png" alt="Recovery Centers of America at Greenville">
+      <h1 class="panel-h1 big" id="welcome-headline">Welcome</h1>
+      <div class="panel-sub" id="welcome-subtitle">to Recovery Centers of America at Greenville</div>
+      <div class="tagline">"Your Recovery Begins Here"</div>
+    </section>
+
+    <!-- MEET YOUR CASE MANAGEMENT TEAM (both) -->
+    <section class="panel panel-meetcm" data-panel="meetcm" data-side="both">
+      <div class="mcm-eyebrow">We're Here For You</div>
+      <div class="mcm-title">Meet Your <b>Case Management Team</b></div>
+      <div class="mcm-intro">Your Case Management team helps you plan your care, connect with resources, and prepare for life after treatment &mdash; every step of the way.</div>
+      <img class="mcm-hero" src="GRVTV-Assets/staff-photos/cm-group-16x9.jpg" alt="Greenville Case Management team" onerror="this.style.display='none'">
+      <div class="mcm-roster">
+        <div class="mcm-person"><img class="mcm-photo" src="GRVTV-Assets/staff-photos/cm-brittany-norman-vo.jpg" alt="Brittany Norman-Vo" onerror="this.style.display='none'"><div class="mcm-name">Brittany Norman-Vo</div><div class="mcm-role is-mgr">Manager of Case Management</div></div>
+        <div class="mcm-person"><img class="mcm-photo" src="GRVTV-Assets/staff-photos/cm-devangela-griffin.jpg" alt="Devangela Griffin" onerror="this.style.display='none'"><div class="mcm-name">Devangela Griffin</div><div class="mcm-role">Case Manager</div></div>
+        <div class="mcm-person"><img class="mcm-photo" src="GRVTV-Assets/staff-photos/cm-ashleigh-adcox.jpg" alt="Ashleigh Adcox" onerror="this.style.display='none'"><div class="mcm-name">Ashleigh Adcox</div><div class="mcm-role">Case Manager</div></div>
+        <div class="mcm-person"><img class="mcm-photo" src="GRVTV-Assets/staff-photos/cm-becky-simard.jpg" alt="Becky Simard" onerror="this.style.display='none'"><div class="mcm-name">Becky Simard</div><div class="mcm-role">Case Manager</div></div>
+      </div>
+      <div class="mcm-foot">Recovery Centers of America &middot; Greenville</div>
+    </section>
+
+    <!-- QUOTE SPOTLIGHT (v1.22 - both) -->
+    <section class="panel panel-quote" data-panel="quote1" data-side="both">
+      <div class="quote-mark-big">&ldquo;</div>
+      <div class="quote-text" id="quote-text-1">You are not alone. Help is closer than you think.</div>
+      <div class="quote-attribution" id="quote-attr-1">Recovery Centers of America</div>
+    </section>
+
+    <!-- TODAY (both) -->
+    <section class="panel panel-today" data-panel="today" data-side="both">
+      <div class="panel-eyebrow">TODAY</div>
+      <h1 class="panel-h1" id="today-date-large">--</h1>
+      <div class="today-grid">
+        <div class="today-block weather-block">
+          <div class="today-label">WEATHER &middot; <span id="weather-loc">Greenville, SC</span></div>
+          <div class="weather-main">
+            <div class="weather-temp" id="weather-temp">--&deg;</div>
+            <div class="weather-side">
+              <div class="weather-cond" id="weather-cond">--</div>
+              <div class="weather-feels" id="weather-feels">Feels like --&deg;</div>
+              <div class="weather-hilo"><span class="hl-hi">H <span id="weather-hi">--&deg;</span></span><span class="hl-lo">L <span id="weather-lo">--&deg;</span></span></div>
+            </div>
+          </div>
+          <div class="weather-extras">
+            <div class="weather-extra"><span class="we-label">HUMIDITY</span><span class="we-val" id="weather-hum">--%</span></div>
+            <div class="weather-extra"><span class="we-label">WIND</span><span class="we-val" id="weather-wind">-- mph</span></div>
+            <div class="weather-extra"><span class="we-label">UV INDEX</span><span class="we-val" id="weather-uv">--</span></div>
+            <div class="weather-extra"><span class="we-label">RAIN</span><span class="we-val" id="weather-rain">--%</span></div>
+          </div>
+          <div class="weather-forecast" id="weather-forecast">
+            <div class="wf-day"><span class="wf-dayname">--</span><span class="wf-hilo">Loading forecast&hellip;</span></div>
+          </div>
+          <div class="weather-sun">
+            <span><span class="sun-label">Sunrise</span> <span id="weather-sunrise">--</span></span>
+            <span><span class="sun-label">Sunset</span> <span id="weather-sunset">--</span></span>
+          </div>
+        </div>
+        <div class="today-block">
+          <div class="today-label">TODAY AT A GLANCE</div>
+          <div id="glance-pathway" class="glance-pathway-tag"></div>
+          <div id="glance-rows">
+            <div class="glance-row"><div class="glance-time">--</div><div class="glance-event">Loading schedule...</div></div>
+          </div>
+          <div id="glance-asof" class="glance-asof"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLOOR SPACES (Right only — wayfinding directory for this floor) -->
+    <section class="panel panel-spaces" data-panel="spaces" data-side="R">
+      <div class="panel-eyebrow" id="spaces-eyebrow">THIS FLOOR</div>
+      <h1 class="panel-h1" id="spaces-headline">Floor Directory</h1>
+      <table class="spaces-table">
+        <tbody id="spaces-tbody">
+          <tr><td colspan="3" style="text-align:center;color:var(--white-faint);font-style:italic;font-size:1.2vw;">No floor spaces configured for this device.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- RECOVERY AFFIRMATION (both) -->
+    <!-- PHOTO TOUR 1 (v1.22 - both, ken burns campus shot) -->
+    <section class="panel panel-photo" data-panel="photo1" data-side="both">
+      <div class="photo-bg" id="photo-bg-1" style="background-image: url('GRVTV-Assets/rca-photo-wide.jpg');"></div>
+      <div class="photo-caption">
+        <div class="eyebrow">RCA Greenville Campus</div>
+        <h1>A place to <strong>begin again</strong>.</h1>
+        <div class="sub">Comprehensive addiction treatment in the Upstate &middot; Calm, accredited, and built around you.</div>
+      </div>
+    </section>
+
+    <section class="panel panel-affirm" data-panel="affirm" data-side="both">
+      <div class="quote-mark open">&ldquo;</div>
+      <div class="quote" id="affirm-text">Recovery is a journey. Today is a step.</div>
+      <div class="quote-mark close">&ldquo;</div>
+    </section>
+
+    <!-- TAKE A BREATH (Left only — 3-minute guided 4-7-8 session) -->
+    <section class="panel panel-wellness" data-panel="wellness" data-side="L">
+      <div class="breath-phase" id="breath-phase">BREATHE IN</div>
+      <div class="breath-circle"><div class="breath-circle-inner"></div></div>
+      <h1 class="panel-h1">Take a Breath</h1>
+      <div class="panel-sub">
+        Breathe in as the circle grows &middot; Hold &middot; Breathe out as it shrinks
+      </div>
+      <div class="breath-countdown">
+        <span class="label">TIME REMAINING</span>
+        <span id="breath-timer">3:00</span>
+      </div>
+      <!-- Audio placeholder: drop a licensed ambient track at C:\Signage\Audio\breath-ambient.mp3
+           and uncomment the <audio> tag below. Currently silent. -->
+      <!-- <audio id="breath-audio" src="Audio/breath-ambient.mp3" loop preload="auto"></audio> -->
+    </section>
+
+    <!-- LEVELS OF CARE (Left only) -->
+    <section class="panel panel-levels" data-panel="levels" data-side="L">
+      <div class="panel-eyebrow">COMPREHENSIVE CARE</div>
+      <h1 class="panel-h1">Levels of Care</h1>
+      <div class="levels-grid">
+        <div class="level-card"><div class="level-icon">&#9877;</div><div class="level-title">Detox</div><div class="level-desc">Medical detoxification with 24/7 clinical care</div></div>
+        <div class="level-card"><div class="level-icon">&#9962;</div><div class="level-title">Inpatient</div><div class="level-desc">Residential treatment in a supportive environment</div></div>
+        <div class="level-card"><div class="level-icon">&#9728;</div><div class="level-title">PHP</div><div class="level-desc">Partial hospitalization with structured programming</div></div>
+        <div class="level-card"><div class="level-icon">&#9881;</div><div class="level-title">IOP</div><div class="level-desc">Intensive outpatient with flexible scheduling</div></div>
+        <div class="level-card"><div class="level-icon">&#9784;</div><div class="level-title">Sober Living</div><div class="level-desc">Transitional housing for continued recovery</div></div>
+      </div>
+    </section>
+
+    <!-- ALUMNI (Left only) -->
+    <!-- FACEBOOK FEED (v1.22 round 7 - "Latest from Facebook" curated rotation, both TVs) -->
+    <section class="panel panel-fb" data-panel="facebook" data-side="both">
+      <div class="fb-header">
+        <div class="fb-logo">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </div>
+        <div class="fb-eyebrow">Latest from Facebook</div>
+      </div>
+      <h2>Recovery Centers of <strong>America</strong></h2>
+      <div class="fb-sub">Community moments + recovery stories from our Facebook page</div>
+      <div class="fb-card-wrap">
+        <div class="fb-card">
+          <div class="fb-loading" id="fb-loading-ns">
+            <div class="fb-loading-icon">f</div>
+            <div class="fb-loading-text">Loading Post...</div>
+          </div>
+          <iframe id="fb-iframe-ns"
+            title="Facebook post" scrolling="no" frameborder="0" allowfullscreen="true"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            src="about:blank"></iframe>
+        </div>
+      </div>
+      <div class="fb-footer">
+        <div class="fb-handle">facebook.com/recoverycentersofamerica</div>
+        <div class="fb-position" id="fb-position-ns">Post 1 of 2</div>
+      </div>
+    </section>
+
+    <!-- TIKTOK FEED (v1.22 round 6 - "scrolling TikTok" experience, both TVs) -->
+    <section class="panel panel-tiktok" data-panel="tiktok" data-side="both">
+      <div class="tt-header">
+        <div class="tt-logo">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/></svg>
+        </div>
+        <div class="tt-eyebrow">@recoverycentersofamerica</div>
+        <h2>on <strong>TikTok</strong></h2>
+      </div>
+      <div class="tt-rail tt-rail-left"><div class="tt-rail-icon">&#x2191;</div><div>Previous</div></div>
+      <div class="tt-phone">
+        <div class="tt-phone-notch"></div><div class="tt-btn tt-btn-action"></div><div class="tt-btn tt-btn-volup"></div><div class="tt-btn tt-btn-voldown"></div><div class="tt-btn tt-btn-power"></div>
+        <div class="tt-phone-screen" id="tt-screen-ns">
+          <div class="tt-loading" id="tt-loading-ns">
+            <div class="tt-loading-icon">&#x25B6;</div>
+            <div class="tt-loading-text">Loading TikTok...</div>
+          </div>
+          <div class="tt-home-indicator"></div>
+        </div>
+      </div>
+      <div class="tt-rail tt-rail-right"><div class="tt-rail-icon">&#x2193;</div><div>Next</div></div>
+      <div class="tt-footer">
+        <div class="tt-handle">@recoverycentersofamerica</div>
+        <div class="tt-position" id="tt-position-ns">Post 1 of 5</div>
+      </div>
+    </section>
+
+    <!-- CONNECT WITH RCA (v1.22 - both) -->
+    <section class="panel panel-connect" data-panel="connect" data-side="both">
+      <div class="connect-eyebrow">Connect With Us</div>
+      <h1>Follow our <strong>10-year journey</strong></h1>
+      <div class="connect-sub">Recovery stories, community moments, and what's happening at RCA Greenville</div>
+      <div class="social-row">
+        <div class="social-pill x">
+          <div class="sp-icon"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+          <div class="sp-body"><div class="sp-platform">X (Twitter)</div><div class="sp-handle">@recoverycoa</div></div>
+        </div>
+        <div class="social-pill ig">
+          <div class="sp-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.337 3.608 1.313.975.975 1.25 2.242 1.312 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.337 2.633-1.312 3.608-.975.975-2.242 1.25-3.608 1.312-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.337-3.608-1.312-.975-.975-1.25-2.242-1.312-3.608C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.062-1.366.337-2.633 1.312-3.608.975-.975 2.242-1.25 3.608-1.312C8.416 2.175 8.796 2.163 12 2.163zM12 6.865A5.135 5.135 0 1 0 12 17.135 5.135 5.135 0 1 0 12 6.865zm0 8.468A3.333 3.333 0 1 1 12 8.667a3.333 3.333 0 0 1 0 6.666zm5.338-9.87a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg></div>
+          <div class="sp-body"><div class="sp-platform">Instagram</div><div class="sp-handle">@recoverycentersofamerica</div></div>
+        </div>
+        <div class="social-pill fb">
+          <div class="sp-icon"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
+          <div class="sp-body"><div class="sp-platform">Facebook</div><div class="sp-handle">Recovery Centers of America</div></div>
+        </div>
+        <div class="social-pill tt">
+          <div class="sp-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/></svg></div>
+          <div class="sp-body"><div class="sp-platform">TikTok</div><div class="sp-handle">@recoverycentersofamerica</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RCA IN THE NEWS (self-contained: reads news.json from GitHub over HTTPS) ===== -->
+    <style>
+      .panel-news { text-align: center; }
+      .panel-news .news-eyebrow { font-size: 1.9vh; letter-spacing: 0.30em; color: #C69C3C; font-weight: 700; text-transform: uppercase; margin-bottom: 1.0vh; }
+      .panel-news h1 { font-size: 5.0vh; font-weight: 700; line-height: 1.02; margin-bottom: 3.4vh; }
+      .panel-news h1 strong { color: #C69C3C; }
+      .panel-news .news-list { display: flex; flex-direction: column; gap: 2.4vh; max-width: 82vw; margin: 0 auto; text-align: left; }
+      .panel-news .news-item { border-left: 0.55vh solid #C69C3C; padding-left: 2.2vw; }
+      .panel-news .news-date { font-size: 1.6vh; letter-spacing: 0.10em; color: #C69C3C; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5vh; }
+      .panel-news .news-headline { font-size: 3.0vh; font-weight: 700; color: #FFFFFF; line-height: 1.18; }
+      .panel-news .news-excerpt { font-size: 2.0vh; color: rgba(255,255,255,0.72); margin-top: 0.7vh; line-height: 1.32; }
+    </style>
+    <section class="panel panel-news" data-panel="news" data-side="both">
+      <div class="news-eyebrow">Recovery Centers of America</div>
+      <h1>In the <strong>News</strong></h1>
+      <div class="news-list" id="news-list"></div>
+    </section>
+    <script>
+    (function(){
+      function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+      function fmtDate(s){ try{ var d=new Date(s); if(isNaN(d.getTime())) return ''; return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){ return ''; } }
+      async function loadNews(){
+        try{
+          var r = await fetch('https://raw.githubusercontent.com/twardlawrca/grv-signage-data/main/news.json?t=' + Date.now(), { cache:'no-store' });
+          if(!r.ok) return;                 // no news.json yet -> leave panel empty (it just won't surface content)
+          var data = await r.json();
+          var items = (data && Array.isArray(data.items)) ? data.items : [];
+          var el = document.getElementById('news-list');
+          if(!el || !items.length) return;
+          el.innerHTML = items.slice(0,3).map(function(it){
+            return '<div class="news-item">' +
+                     '<div class="news-date">' + fmtDate(it.date) + '</div>' +
+                     '<div class="news-headline">' + esc(it.title) + '</div>' +
+                     (it.excerpt ? '<div class="news-excerpt">' + esc(it.excerpt) + '</div>' : '') +
+                   '</div>';
+          }).join('');
+        }catch(e){ /* offline/parse error -> leave as-is */ }
+      }
+      loadNews(); setInterval(loadNews, 15 * 60 * 1000);   // refresh every 15 min
+    })();
+    </script>
+    <!-- ===== end RCA in the News ===== -->
+
+    <!-- ===== BRAIN BREAK / WELLNESS QUIZ (self-contained: 1 question x [question -> 30s -> answer], then rotate; reads trivia.json over HTTPS) -->
+    <style>
+      .panel-trivia { text-align: center; }
+      .panel-trivia .tq-eyebrow { font-size: 1.9vh; letter-spacing: 0.30em; color: #C69C3C; font-weight: 700; text-transform: uppercase; margin-bottom: 2.2vh; }
+      .panel-trivia .tq-question { font-size: 4.2vh; font-weight: 700; color: #FFFFFF; line-height: 1.25; max-width: 80vw; margin: 0 auto 3.4vh; }
+      .panel-trivia .tq-count { font-size: 9vh; font-weight: 800; color: #C69C3C; line-height: 1; min-height: 11vh; }
+      .panel-trivia .tq-count .tq-label { display: block; font-size: 1.7vh; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); text-transform: uppercase; font-weight: 700; margin-top: 0.8vh; }
+      .panel-trivia .tq-answer { font-size: 3.3vh; font-weight: 700; color: #7CD9A0; line-height: 1.3; max-width: 80vw; margin: 0 auto; visibility: hidden; }
+      .panel-trivia .tq-answer .tq-a-label { display: block; font-size: 1.6vh; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); text-transform: uppercase; font-weight: 700; margin-bottom: 0.7vh; }
+      .panel-trivia .tq-source { font-size: 1.5vh; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-transform: uppercase; font-weight: 700; margin-top: 1.8vh; visibility: hidden; }
+    </style>
+    <section class="panel panel-trivia" data-panel="trivia" data-side="both">
+      <div class="tq-eyebrow" id="tq-eyebrow">Brain Break &middot; Wellness Quiz</div>
+      <div class="tq-question" id="tq-question"></div>
+      <div class="tq-count" id="tq-count"></div>
+      <div class="tq-answer" id="tq-answer"></div>
+      <div class="tq-source" id="tq-source"></div>
+    </section>
+    <script>
+    (function(){
+      var RAW = 'https://raw.githubusercontent.com/twardlawrca/grv-signage-data/main/trivia.json';
+      var FALLBACK = [
+        {q:"How many hours of sleep do most adults need each night?", a:"7 to 9 hours.", s:"CDC"},
+        {q:"Name one benefit of slow, deep breathing.", a:"It calms the body's stress response.", s:"Mayo Clinic"},
+        {q:"True or False: connection with others supports recovery.", a:"True.", s:"SAMHSA"},
+        {q:"What does the HALT check-in stand for?", a:"Hungry, Angry, Lonely, Tired.", s:"SAMHSA"},
+        {q:"What keeps motivation steady over time?", a:"Small, reachable goals.", s:"SAMHSA"}
+      ];
+      var POOL = FALLBACK.slice(), BAG = [];
+      var PER_SHOW = 1, COUNTDOWN = 30, HOLD = 6;   // 1 question per visit, 30s to think
+      function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+      function refill(){ BAG = POOL.slice(); for (var i = BAG.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = BAG[i]; BAG[i] = BAG[j]; BAG[j] = t; } }
+      function nextItem(){ if (!POOL.length) return null; if (!BAG.length) refill(); return BAG.pop(); }
+      try {
+        fetch(RAW + '?t=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+          if (d && Array.isArray(d.items) && d.items.length) { POOL = d.items; BAG = []; }
+        }).catch(function(){});
+      } catch (e) {}
+      var ebEl = document.getElementById('tq-eyebrow');
+      var qEl = document.getElementById('tq-question');
+      var cEl = document.getElementById('tq-count');
+      var aEl = document.getElementById('tq-answer');
+      var srcEl = document.getElementById('tq-source');
+      var _t = null, _qn = 0, _phase = '', _rem = 0;
+      function _stop(){ if (_t) { clearInterval(_t); _t = null; } }
+      function _countTxt(n){ return n + '<span class="tq-label">seconds...</span>'; }
+      function _showQuestion(){
+        _qn++;
+        if (_qn > PER_SHOW) { _stop(); return; }   // 3 shown -> stop; rotation advances on its slot timer
+        var item = nextItem(); if (!item) { _stop(); return; }
+        if (ebEl) ebEl.innerHTML = 'Brain Break &middot; Question ' + _qn + ' of ' + PER_SHOW;
+        if (qEl) qEl.textContent = item.q;
+        if (aEl) { aEl.innerHTML = '<span class="tq-a-label">Answer</span>' + esc(item.a); aEl.style.visibility = 'hidden'; }
+        if (srcEl) { srcEl.textContent = item.s ? ('Source: ' + item.s) : ''; srcEl.style.visibility = 'hidden'; }
+        _phase = 'count'; _rem = COUNTDOWN;
+        if (cEl) cEl.innerHTML = _countTxt(_rem);
+      }
+      function _tick(){
+        _rem--;
+        if (_phase === 'count') {
+          if (_rem > 0) { if (cEl) cEl.innerHTML = _countTxt(_rem); }
+          else { if (cEl) cEl.innerHTML = ''; if (aEl) aEl.style.visibility = 'visible'; if (srcEl) srcEl.style.visibility = 'visible'; _phase = 'hold'; _rem = HOLD; }
+        } else {
+          if (_rem <= 0) { _showQuestion(); }
+        }
+      }
+      function _start(){ _stop(); _qn = 0; _showQuestion(); _t = setInterval(_tick, 1000); }
+      var sec = document.querySelector('.panel-trivia');
+      if (sec) { new MutationObserver(function(){ if (sec.classList.contains('active')) _start(); else _stop(); }).observe(sec, { attributes: true, attributeFilter: ['class'] }); }
+    })();
+    </script>
+    <!-- ===== end Brain Break ===== -->
+
+    <section class="panel panel-info" data-panel="alumni" data-side="L">
+      <div class="panel-eyebrow">COMMUNITY</div>
+      <h1 class="panel-h1">Alumni</h1>
+      <div class="panel-sub">
+        Lifetime access to the RCA alumni community.<br>
+        Weekly meetings &middot; Regular events &middot; Always free
+      </div>
+      <div class="panel-sub" style="margin-top: 3vh; color: var(--gold-soft); font-weight: 600;">
+        Ask any staff member to connect you.
+      </div>
+    </section>
+
+    <!-- FAMILY (Left only) -->
+    <section class="panel panel-info" data-panel="family" data-side="L">
+      <div class="panel-eyebrow">YOU'RE NOT ALONE</div>
+      <h1 class="panel-h1">Family Program</h1>
+      <div class="panel-sub">
+        Family education &middot; Coaching sessions &middot; Webinars &middot; Support groups
+      </div>
+      <div class="panel-sub" style="margin-top: 3vh; color: var(--gold-soft); font-weight: 600;">
+        Addiction affects the whole family. Recovery does too.
+      </div>
+    </section>
+
+    <!-- 12 STEPS (both — per Tevin: ALL TVs) -->
+    <section class="panel panel-steps" data-panel="steps" data-side="both">
+      <div class="panel-eyebrow">PATH TO SPIRITUAL PROGRESS</div>
+      <h1 class="panel-h1">The 12 Steps</h1>
+      <div class="steps-intro">
+        A series of actions designed to elicit what The Big Book of Alcoholics Anonymous calls a <em>"psychic change"</em> &mdash; a complete mental, emotional, and spiritual shift in perception.
+      </div>
+      <div class="steps-grid">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">We admitted we were powerless over alcohol &mdash; that our lives had become unmanageable.</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Came to believe that a Power greater than ourselves could restore us to sanity.</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">Made a decision to turn our will and our lives over to the care of God as we understood Him.</div></div>
+        <div class="step-row"><div class="step-num">4</div><div class="step-text">Made a searching and fearless moral inventory of ourselves.</div></div>
+        <div class="step-row"><div class="step-num">5</div><div class="step-text">Admitted to God, to ourselves, and to another human being the exact nature of our wrongs.</div></div>
+        <div class="step-row"><div class="step-num">6</div><div class="step-text">Were entirely ready to have God remove all these defects of character.</div></div>
+        <div class="step-row"><div class="step-num">7</div><div class="step-text">Humbly asked Him to remove our shortcomings.</div></div>
+        <div class="step-row"><div class="step-num">8</div><div class="step-text">Made a list of all persons we had harmed and became willing to make amends to them all.</div></div>
+        <div class="step-row"><div class="step-num">9</div><div class="step-text">Made direct amends to such people wherever possible, except when doing so would injure them or others.</div></div>
+        <div class="step-row"><div class="step-num">10</div><div class="step-text">Continued to take personal inventory and, when we were wrong, promptly admitted it.</div></div>
+        <div class="step-row"><div class="step-num">11</div><div class="step-text">Sought through prayer and meditation to improve our conscious contact with God, praying only for knowledge of His will and the power to carry it out.</div></div>
+        <div class="step-row"><div class="step-num">12</div><div class="step-text">Having had a spiritual awakening as the result of these steps, we tried to carry this message to others, and to practice these principles in all our affairs.</div></div>
+      </div>
+    </section>
+
+    <!-- DID YOU KNOW (both) -->
+    <!-- DID YOU KNOW (v1.22 - both) -->
+    <section class="panel panel-dyk-mini" data-panel="dyk" data-side="both">
+      <div class="dyk-eyebrow">Did You Know?</div>
+      <div class="dyk-icon">&#x1F4A1;</div>
+      <div class="dyk-fact" id="dyk-fact-text"><strong>Recovery is the rule, not the exception</strong> &mdash; the majority of people with a substance use disorder eventually achieve sustained recovery.</div>
+      <div class="dyk-source" id="dyk-source-text">Recovery Research Institute, 2020</div>
+    </section>
+
+    <!-- PHOTO TOUR 2 (v1.22 - both, entrance shot) -->
+    <section class="panel panel-photo" data-panel="photo2" data-side="both">
+      <div class="photo-bg" id="photo-bg-2" style="background-image: url('GRVTV-Assets/rca-photo-entrance.jpg');"></div>
+      <div class="photo-caption">
+        <div class="eyebrow">Our Front Door</div>
+        <h1>The first step is <strong>walking in</strong>.</h1>
+        <div class="sub">Recovery Centers of America at Greenville &middot; Welcoming, accredited, ready when you are.</div>
+      </div>
+    </section>
+
+    <section class="panel panel-stats" data-panel="stats" data-side="both">
+      <div class="panel-eyebrow">DID YOU KNOW?</div>
+      <h1 class="panel-h1">You're in good company.</h1>
+      <div class="stats-row">
+        <div class="stat-cell"><div class="stat-num" id="stat-patients">0</div><div class="stat-label">Patients Treated</div></div>
+        <div class="stat-cell"><div class="stat-num" id="stat-years">0</div><div class="stat-label">Years Saving Lives</div></div>
+        <div class="stat-cell"><div class="stat-num" id="stat-support">0/0</div><div class="stat-label">Clinical Support</div></div>
+      </div>
+      <div class="accred-row">
+        <strong>Joint Commission</strong> accredited &nbsp;&middot;&nbsp; <strong>CARF</strong> accredited &nbsp;&middot;&nbsp; <strong>Newsweek</strong> "America's Best Addiction Treatment Centers"
+      </div>
+    </section>
+
+    <!-- FEATURED VIDEO (both) -->
+    <section class="panel panel-video" data-panel="video" data-side="both">
+      <div class="video-frame">
+        <iframe id="demo-yt" title="RCA brand video" allow="autoplay; encrypted-media; fullscreen" allowfullscreen frameborder="0" style="width:min(88vw,150vh);aspect-ratio:16/9;border:0;border-radius:12px;background:#000;box-shadow:0 6px 24px rgba(0,0,0,.4);"></iframe>
+        <div class="placeholder" id="video-placeholder">
+          <div class="placeholder-icon">&#9658;</div>
+          <div class="placeholder-title">Featured Recovery Stories</div>
+          <div class="placeholder-text">RCA brand videos &middot; FOX Carolina coverage &middot; A Decade of Hope</div>
+          <div class="placeholder-tag">Video plays here on the device once yt-dlp populates the playlist</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HELP / STAFF ATTENTION (both) -->
+    <section class="panel panel-help" data-panel="help" data-side="both">
+      <div class="help-icon"><div class="help-icon-glyph">&#9787;</div></div>
+      <div class="panel-eyebrow">WE'RE HERE FOR YOU</div>
+      <div class="help-headline">Need attention? Just ask.</div>
+      <div class="help-body">
+        If you or someone here needs assistance,<br>
+        please notify <span class="help-emph">ANY staff member</span>.
+      </div>
+    </section>
+
+    <!-- IT / TECHNICAL SUPPORT (staff-facing, both TVs) -->
+    <section class="panel panel-itsupport" data-panel="itsupport" data-side="both">
+      <div class="it-staff-badge">For Staff &middot; Technical Support</div>
+      <h1>Need <strong>Tech Help?</strong></h1>
+      <div class="it-sub">Submit an IT ticket three ways &mdash; we'll get you taken care of.</div>
+      <div class="it-methods">
+        <div class="it-method">
+          <div class="it-icon">&#9993;</div>
+          <div class="it-method-label">Email a Ticket</div>
+          <div class="it-method-value">servicedesk@recoverycoa.com</div>
+          <div class="it-method-note">CC your Site Technician &rarr;</div>
+        </div>
+        <div class="it-method">
+          <div class="it-icon">&#128100;</div>
+          <div class="it-method-label">Site Technician &mdash; Greenville</div>
+          <div class="it-method-value">Tevin Wardlaw</div>
+          <div class="it-method-note">t.wardlaw@recoverycoa.com</div>
+        </div>
+        <div class="it-method">
+          <div class="it-icon">&#9742;</div>
+          <div class="it-method-label">Call the Service Desk</div>
+          <div class="it-method-value">1-855-435-7635</div>
+          <div class="it-method-note">During business hours</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dots" id="dots"></div>
+  </main>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="footer-affirm">
+      <div class="footer-affirm-text" id="footer-affirm">Your recovery begins here.</div>
+    </div>
+    <div class="footer-help">
+      <div>
+        <div class="footer-help-label">NEED ATTENTION?</div>
+        <div class="footer-help-text">Ask any staff member</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ ASSET INFO BAR ═══ -->
+  <div class="asset-info">
+    <span class="asset-cell"><span class="asset-label">SERIAL</span><span id="ai-serial">--</span></span>
+    <span class="asset-sep">|</span>
+    <span class="asset-cell"><span class="asset-label">ASSET</span><span id="ai-asset">--</span></span>
+    <span class="asset-sep">|</span>
+    <span class="asset-cell"><span class="asset-label">LOCATION</span><span id="ai-floor">--</span></span>
+    <span class="asset-sep">|</span>
+    <span class="asset-cell"><span class="asset-label">UPTIME</span><span id="ai-uptime">--</span></span>
+  </div>
+
+  <script>
+    'use strict';
+
+    // ── file:// FETCH FIX (kiosk TVs) ───────────────────────────
+    // Edge on the kiosks returns status:0 / ok:false for local file:// reads
+    // even when the file is perfectly fine -- which silently broke EVERY
+    // `if (res.ok)` gate (alert overlay, schedule glance, device-info, videos,
+    // social feeds). Re-wrap a readable status-0 response as a 200 so those
+    // gates pass. Internet fetches (Open-Meteo weather, TikTok oembed) are
+    // status 200 and pass straight through untouched.
+    (function(){
+      const _origFetch = window.fetch;
+      window.fetch = function(input, init){
+        return _origFetch.call(this, input, init).then(function(r){
+          if (r && r.status === 0) {
+            return r.blob().then(function(b){ return new Response(b, { status: 200, statusText: 'OK' }); });
+          }
+          return r;
+        });
+      };
+    })();
+
+    // ── LIVE CLOCK ──────────────────────────────────────────────
+    function pad(n){return n<10?'0'+n:''+n;}
+    function fmtTime(d){let h=d.getHours();const m=pad(d.getMinutes());const a=h>=12?'PM':'AM';h=h%12;if(h===0)h=12;return h+':'+m+' '+a;}
+    const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function fmtDate(d){return DAYS[d.getDay()]+', '+MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+    function fmtDateShort(d){return DAYS[d.getDay()]+', '+MONTHS[d.getMonth()]+' '+d.getDate();}
+    function tickClock(){
+      const now=new Date();
+      document.getElementById('clock-time').textContent=fmtTime(now);
+      document.getElementById('clock-date').textContent=fmtDate(now);
+      const dlEl=document.getElementById('today-date-large');
+      if(dlEl)dlEl.textContent=fmtDateShort(now);
+    }
+    tickClock();
+    setInterval(tickClock,1000);
+
+    // ── DEVICE INFO + SIDE DETECTION ────────────────────────────
+    let currentSide = 'L';   // default Left if we can't tell
+    let deviceInfo  = {};
+    let _bootTimeMs = null;
+
+    async function loadDeviceInfo() {
+      try {
+        const res = await fetch('device-info.json?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          deviceInfo = await res.json();
+          // Side from variant
+          if (deviceInfo.variant === 'NursingStation-R') currentSide = 'R';
+          else                                            currentSide = 'L';
+          // Side tag at top
+          document.getElementById('side-tag').textContent =
+              (currentSide === 'L' ? 'LEFT ' : 'RIGHT ') + '· NURSING STATION';
+          // Welcome subtitle
+          if (deviceInfo.welcome_subtitle) {
+            document.getElementById('welcome-subtitle').textContent = deviceInfo.welcome_subtitle;
+          }
+          // Floor name on asset bar
+          document.getElementById('ai-serial').textContent = deviceInfo.serial    || '--';
+          document.getElementById('ai-asset' ).textContent = deviceInfo.asset_tag || '--';
+          document.getElementById('ai-floor' ).textContent = deviceInfo.floor_name || deviceInfo.hostname || '--';
+          // Floor spaces (Right TV's wayfinding panel)
+          renderFloorSpaces(deviceInfo);
+        }
+      } catch (e) { /* silent fallback */ }
+    }
+
+    function renderFloorSpaces(info) {
+      const tbody = document.getElementById('spaces-tbody');
+      if (!info.floor_spaces || !Array.isArray(info.floor_spaces) || info.floor_spaces.length === 0) return;
+      // Headline shows floor identity
+      if (info.floor_overview) {
+        document.getElementById('spaces-eyebrow').textContent = info.floor_overview.toUpperCase();
+      }
+      // Build table rows
+      tbody.innerHTML = '';
+      info.floor_spaces.forEach(space => {
+        const tr = document.createElement('tr');
+        const td1 = document.createElement('td'); td1.className = 'room'; td1.textContent = space.room || '';
+        const td2 = document.createElement('td'); td2.className = 'name'; td2.textContent = space.name || '';
+        const td3 = document.createElement('td'); td3.className = 'type'; td3.textContent = space.type || '';
+        tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadBootTime() {
+      try {
+        const res = await fetch('boot-time.txt?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const txt = (await res.text()).trim();
+          const d = new Date(txt);
+          if (!isNaN(d.getTime())) _bootTimeMs = d.getTime();
+        }
+      } catch (e) { /* silent */ }
+      if (_bootTimeMs === null) _bootTimeMs = Date.now();
+    }
+    function updateUptime() {
+      if (_bootTimeMs === null) return;
+      const ms = Date.now() - _bootTimeMs;
+      const d = Math.floor(ms / 86400000);
+      const h = Math.floor((ms / 3600000) % 24);
+      const m = Math.floor((ms / 60000) % 60);
+      let s;
+      if (d > 0)      s = d+'d '+h+'h '+m+'m';
+      else if (h > 0) s = h+'h '+m+'m';
+      else            s = m+'m';
+      document.getElementById('ai-uptime').textContent = s;
+    }
+
+    // ── PANEL ROTATION ──────────────────────────────────────────
+    let allPanels = [];
+    let panels    = [];   // filtered by side
+    let curIdx    = 0;
+    let curTimer  = null;
+
+    const durations = {
+      trivia:    40000,  // Brain Break: 3 questions
+      welcome:   16000,
+      quote1:    14000,   // v1.22: oversized cinematic quote
+      today:     22000,   // weather + glance both expanded -- more to read
+      photo1:    16000,   // v1.22: ken-burns RCA Greenville campus
+      spaces:    22000,
+      affirm:    18000,
+      wellness: 195000,   // 3 min (180s) guided breath + 15s settle
+      levels:    24000,   // stagger animation runs ~2.5s, add reading time
+      tiktok:    28000,   // v1.22 round 6: one TikTok per panel show
+      facebook:  22000,   // v1.22 round 7: one Facebook post per panel show
+      connect:   16000,   // v1.22: social handles
+      alumni:    16000,
+      family:    16000,
+      dyk:       16000,   // v1.22: recovery science fact
+      photo2:    16000,   // v1.22: ken-burns entrance shot
+      steps:     50000,   // 12 steps revealed over ~42 sec + 8 sec to read all
+      stats:     20000,
+      video:     90000,
+      help:      16000,
+      itsupport: 22000   // v1.22: staff IT-support panel
+    };
+
+    function buildDots() {
+      const dotsEl = document.getElementById('dots');
+      dotsEl.innerHTML = '';
+      panels.forEach((p, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        dotsEl.appendChild(d);
+      });
+    }
+    function setActive(idx) {
+      panels.forEach((p, i) => p.classList.toggle('active', i === idx));
+      Array.from(document.querySelectorAll('.dot')).forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+    function nextPanel() {
+      curIdx = (curIdx + 1) % panels.length;
+      setActive(curIdx);
+      const name = panels[curIdx].dataset.panel;
+      _onPanelEnter(name);
+      if (!_rotationPaused) {
+        // The video panel advances on the clip's 'ended' event (so it plays IN FULL);
+        // this timeout is only a safety cap for a stalled stream that never ends.
+        var ms = (name === 'video') ? 300000 : (durations[name] || 18000);
+        curTimer = setTimeout(nextPanel, ms);
+      }
+    }
+    // Brand clip finished (or errored): advance to the next panel immediately.
+    function _videoEnded() {
+      var vp = document.querySelector('.panel[data-panel="video"]');
+      if (!vp || !vp.classList.contains('active') || _rotationPaused) return;
+      if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+      nextPanel();
+    }
+
+    // ── PER-PANEL ENTER HOOKS ────────────────────────────────────
+    // Fires whenever a panel becomes active. Used to kick off
+    // animations tied to specific panels (counters, breath timer).
+    function _onPanelEnter(name) {
+      // Stop the brand video the moment we leave its panel -- otherwise it keeps
+      // playing hidden (audio bleeds on the Right TV) and you catch it mid-clip next
+      // time. Pause + reset so it always starts from 0, in full, when the panel returns.
+      if (name !== 'video') {
+        var _vid = document.getElementById('featured-video');
+        if (_vid) { try { _vid.pause(); _vid.currentTime = 0; } catch (e) {} }
+      }
+      if (name === 'stats')    { _animateStats(); }
+      if (name === 'wellness') { _startBreathSession(); }
+      else                     { _stopBreathSession(); }
+
+      // v1.22 panel content refreshers
+      if (name === 'quote1') { _refreshQuotePanel(); }
+      if (name === 'dyk')    { _refreshDykPanel(); }
+      if (name === 'today')  { loadWeather(); }
+      if (name === 'photo1') { _refreshPhotoPanel('photo-bg-1'); }
+      if (name === 'photo2') { _refreshPhotoPanel('photo-bg-2'); }
+      if (name === 'video' && typeof loadVideoSource === 'function') {
+        // Pick a NEW random clip every time the video panel comes up
+        try { loadVideoSource(); } catch (e) { /* swallow */ }
+      }
+      if (name === 'tiktok')   { loadNextTikTokNs(); }
+      if (name === 'facebook') { loadNextFacebookNs(); }
+    }
+
+    // ── FACEBOOK FEED INTEGRATION (v1.22 round 7) ──────────────
+    let _fbFeedNs = null;
+    let _fbIdxNs  = -1;
+    const _fbFallbackNs = {
+      posts: [
+        'https://www.facebook.com/story.php?story_fbid=859575113831625&id=100093374316588',
+        'https://www.facebook.com/story.php?story_fbid=858756093913527&id=100093374316588'
+      ]
+    };
+    async function loadFbFeedNs() {
+      try {
+        const r = await fetch('GRVTV-Panels/facebook-feed.json?t=' + Date.now(), { cache: 'no-store' });
+        if (r.ok) {
+          const data = await r.json();
+          if (data && Array.isArray(data.posts) && data.posts.length > 0) {
+            _fbFeedNs = data;
+            return;
+          }
+        }
+      } catch (e) { /* fall through */ }
+      _fbFeedNs = _fbFallbackNs;
+    }
+    function _fbPluginUrlNs(postUrl) {
+      return 'https://www.facebook.com/plugins/post.php?href=' +
+             encodeURIComponent(postUrl) +
+             '&width=500&show_text=true&height=580&appId';
+    }
+    async function loadNextFacebookNs() {
+      if (!_fbFeedNs) { await loadFbFeedNs(); }
+      if (!_fbFeedNs || !_fbFeedNs.posts || _fbFeedNs.posts.length === 0) return;
+      _fbIdxNs = (_fbIdxNs + 1) % _fbFeedNs.posts.length;
+      const url = _fbFeedNs.posts[_fbIdxNs];
+      const iframe = document.getElementById('fb-iframe-ns');
+      const loading = document.getElementById('fb-loading-ns');
+      const pos = document.getElementById('fb-position-ns');
+      if (pos) pos.textContent = 'Post ' + (_fbIdxNs + 1) + ' of ' + _fbFeedNs.posts.length;
+      if (loading) loading.classList.remove('hidden');
+      if (iframe) iframe.src = _fbPluginUrlNs(url);
+      setTimeout(() => { if (loading) loading.classList.add('hidden'); }, 2200);
+    }
+    loadFbFeedNs();
+    setInterval(loadFbFeedNs, 5 * 60 * 1000);
+
+    // ── TIKTOK FEED INTEGRATION (v1.22 round 6) ───────────────
+    let _tiktokFeedNS = null;
+    let _tiktokIdxNS  = -1;
+    const _tiktokFallbackNS = {
+      posts: [
+        'https://www.tiktok.com/@recoverycentersofamerica/video/7634309524815351054',
+        'https://www.tiktok.com/@recoverycentersofamerica/video/7615610906524814605',
+        'https://www.tiktok.com/@recoverycentersofamerica/video/7611591570336320781',
+        'https://www.tiktok.com/@recoverycentersofamerica/photo/7430864572921220395',
+        'https://www.tiktok.com/@recoverycentersofamerica/photo/7429789937786015019'
+      ]
+    };
+    async function loadTikTokFeedNs() {
+      try {
+        const r = await fetch('GRVTV-Panels/tiktok-feed.json?t=' + Date.now(), { cache: 'no-store' });
+        if (r.ok) {
+          const data = await r.json();
+          if (data && Array.isArray(data.posts) && data.posts.length > 0) {
+            _tiktokFeedNS = data;
+            return;
+          }
+        }
+      } catch (e) { /* fall through */ }
+      _tiktokFeedNS = _tiktokFallbackNS;
+    }
+    async function loadNextTikTokNs() {
+      if (!_tiktokFeedNS) { await loadTikTokFeedNs(); }
+      if (!_tiktokFeedNS || !_tiktokFeedNS.posts || _tiktokFeedNS.posts.length === 0) return;
+      _tiktokIdxNS = (_tiktokIdxNS + 1) % _tiktokFeedNS.posts.length;
+      const url = _tiktokFeedNS.posts[_tiktokIdxNS];
+      const posEl = document.getElementById('tt-position-ns');
+      if (posEl) posEl.textContent = 'Post ' + (_tiktokIdxNS + 1) + ' of ' + _tiktokFeedNS.posts.length;
+      await embedTikTokIntoNs(url);
+    }
+    async function embedTikTokIntoNs(url) {
+      const screen  = document.getElementById('tt-screen-ns');
+      const loading = document.getElementById('tt-loading-ns');
+      if (!screen || !loading) return;
+      loading.classList.remove('hidden');
+      Array.from(screen.querySelectorAll('blockquote.tiktok-embed, iframe')).forEach(el => el.remove());
+      let html = null;
+      try {
+        const oembed = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url);
+        const r = await fetch(oembed, { mode: 'cors' });
+        if (r.ok) {
+          const data = await r.json();
+          if (data && data.html) html = data.html;
+        }
+      } catch (e) { /* swallow */ }
+      if (!html) {
+        html = '<blockquote class="tiktok-embed" cite="' + url + '" data-video-id=""><section></section></blockquote>';
+      }
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      Array.from(wrapper.children).forEach(child => {
+        if (child.tagName && child.tagName.toLowerCase() === 'script') return;
+        screen.appendChild(child);
+      });
+      Array.from(document.querySelectorAll('script[src*="tiktok.com/embed.js"]')).forEach(s => s.remove());
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.tiktok.com/embed.js';
+      document.body.appendChild(s);
+      setTimeout(() => { loading.classList.add('hidden'); }, 1800);
+    }
+    loadTikTokFeedNs();
+    setInterval(loadTikTokFeedNs, 5 * 60 * 1000);
+
+    // ── VIDEO PANEL ENHANCED PLACEHOLDER (v1.22 round 9) ───────
+    // Round 6 added a YouTube-iframe fallback for Mac preview. Bug:
+    // when deployed kiosks were missing videos.json, the fallback
+    // fired -- and Error 153 surfaced on EVERY kiosk because Edge
+    // on the mini PCs can't play YouTube iframes. REMOVED the
+    // iframe fallback entirely (round 9). Instead: enhance the
+    // placeholder so it's visually engaging while we wait for
+    // videos.json to populate via yt-dlp / Update-VideoUrls.ps1.
+    //
+    // If videos.json is missing on a deployed kiosk: run
+    //   C:\Signage\Update-VideoUrls.ps1
+    // manually, OR check that the scheduled task is running.
+
+    // Cycle the placeholder text every 5 sec so it doesn't feel static.
+    const _placeholderCycle = [
+      { title: 'Featured Recovery Stories',     sub: 'RCA brand videos · FOX Carolina coverage · A Decade of Hope' },
+      { title: 'Voices of Recovery',            sub: 'Real patients · Real stories · Real hope' },
+      { title: 'A Decade of Saving Lives',      sub: 'Celebrating 10 years of RCA' },
+      { title: 'Recovery Centers of America',   sub: 'Comprehensive care · Compassionate community' }
+    ];
+    let _placeholderIdx = 0;
+    function rotatePlaceholderText() {
+      const phEl = document.getElementById('video-placeholder');
+      if (!phEl) return;
+      const titleEl = phEl.querySelector('.placeholder-text');
+      const subEl   = phEl.querySelector('.placeholder-sub');
+      if (!titleEl) return;
+      const cur = _placeholderCycle[_placeholderIdx % _placeholderCycle.length];
+      titleEl.textContent = cur.title;
+      if (subEl) subEl.textContent = cur.sub;
+      _placeholderIdx++;
+    }
+    setInterval(rotatePlaceholderText, 5000);
+
+    // ── v1.22 ROTATING CONTENT POOLS ────────────────────────────
+    const _quotePoolNS = [
+      { text: 'You are not alone. Help is closer than you think.',                      attr: 'Recovery Centers of America' },
+      { text: 'Recovery is a journey, not a destination. Each day is a step forward.',  attr: 'RCA at Greenville' },
+      { text: "You didn't come this far to only come this far.",                        attr: 'Recovery affirmation' },
+      { text: 'Hope. Healing. Community.',                                              attr: 'RCA at Greenville' },
+      { text: 'Asking for help is wisdom. Showing up is courage.',                      attr: 'Recovery affirmation' },
+      { text: "Healing isn't linear. Keep going.",                                      attr: 'Recovery affirmation' },
+      { text: 'Today is a step. Tomorrow is another step.',                             attr: 'Recovery affirmation' },
+      { text: 'We rise by lifting others.',                                             attr: 'Recovery affirmation' },
+      { text: 'Just for today, you can do this.',                                        attr: 'Recovery affirmation' },
+      { text: 'Trade resentment for acceptance, and fear for faith.',                    attr: 'Recovery affirmation' },
+      { text: 'One day at a time is enough.',                                            attr: 'Recovery affirmation' },
+      { text: 'Keep going -- more will be revealed.',                                    attr: 'Recovery affirmation' },
+      { text: 'You can get through hard moments without going back.',                    attr: 'Recovery affirmation' },
+      { text: "Recovery means you're free to become who you want to be.",               attr: 'Recovery affirmation' },
+      { text: 'Connection is part of healing. Let people in.',                          attr: 'Recovery affirmation' }
+    ];
+    let _quoteIdxNS = 0;
+    function _refreshQuotePanel() {
+      const q = _quotePoolNS[_quoteIdxNS % _quotePoolNS.length];
+      const t = document.getElementById('quote-text-1');
+      const a = document.getElementById('quote-attr-1');
+      if (t) t.textContent = q.text;
+      if (a) a.textContent = q.attr;
+      _quoteIdxNS++;
+    }
+
+    const _dykPoolNS = [
+      { fact: '<strong>Recovery is the rule, not the exception</strong> &mdash; the majority of people with a substance use disorder eventually achieve sustained recovery.', src: 'Recovery Research Institute, 2020' },
+      { fact: 'It takes the brain an average of <strong>4 to 6 weeks</strong> after stopping substance use to begin meaningfully restoring its reward circuitry.', src: 'National Institute on Drug Abuse' },
+      { fact: '<strong>23 million Americans</strong> are in long-term recovery from a substance use disorder. You are joining a community larger than you may realize.', src: 'SAMHSA' },
+      { fact: 'A <strong>20-minute walk</strong> is one of the most effective craving interventions &mdash; exercise activates the same dopamine pathways many substances target.', src: 'Journal of Substance Abuse Treatment' },
+      { fact: '<strong>Mindfulness practice</strong> &mdash; even 5 minutes a day &mdash; reduces relapse rates by up to 31% compared to standard care alone.', src: 'JAMA Psychiatry, 2014' },
+      { fact: 'Family involvement in treatment is associated with <strong>50% higher</strong> rates of treatment completion and sustained recovery at one year.', src: 'SAMHSA, 2019' },
+      { fact: 'The first <strong>90 days</strong> are statistically the highest-risk period for relapse. Every day past 90 dramatically improves your long-term odds.', src: 'National Institute on Drug Abuse' },
+      { fact: 'Recovery <strong>improves quality of life</strong> across every measurable domain: relationships, employment, physical health, mental health, finances, and life satisfaction.', src: 'Recovery Research Institute, 2019' }
+    ];
+    let _dykIdxNS = 0;
+    function _refreshDykPanel() {
+      const d = _dykPoolNS[_dykIdxNS % _dykPoolNS.length];
+      const f = document.getElementById('dyk-fact-text');
+      const s = document.getElementById('dyk-source-text');
+      if (f) f.innerHTML = d.fact;
+      if (s) s.textContent = d.src;
+      _dykIdxNS++;
+    }
+
+    const _photoPoolNS = [
+      'GRVTV-Assets/rca-photo-wide.jpg',
+      'GRVTV-Assets/rca-photo-slide.jpg',
+      'GRVTV-Assets/rca-photo-entrance.jpg'
+    ];
+    let _photoIdxNS = 0;
+    function _refreshPhotoPanel(slotId) {
+      const el = document.getElementById(slotId);
+      if (!el) return;
+      el.style.backgroundImage = "url('" + _photoPoolNS[_photoIdxNS % _photoPoolNS.length] + "')";
+      _photoIdxNS++;
+    }
+
+    // ── ANIMATED COUNTER TALLY (panel-stats) ─────────────────────
+    // Port of the WF counter pattern. Each run animates 0 -> target
+    // over ~2.2 sec when the panel first appears.
+    function _easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function _animateCounter(el, target, durationMs, suffix) {
+      if (!el) return;
+      suffix = suffix || '';
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / durationMs);
+        const v = Math.round(target * _easeOutCubic(t));
+        if (target >= 1000) {
+          // Format 100000 -> 100K
+          el.textContent = (v >= 1000 ? Math.round(v / 1000) + 'K' : v) + suffix;
+        } else {
+          el.textContent = v + suffix;
+        }
+        if (t < 1) requestAnimationFrame(tick);
+        else if (suffix === '+' && target >= 1000) el.textContent = '100K' + suffix;
+      }
+      requestAnimationFrame(tick);
+    }
+    function _animateStats() {
+      _animateCounter(document.getElementById('stat-patients'), 100000, 2200, '+');
+      _animateCounter(document.getElementById('stat-years'),    10,     1800, '+');
+      // 24/7 isn't a single number — animate both halves
+      const el = document.getElementById('stat-support');
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / 1800);
+        const h = Math.round(24 * _easeOutCubic(t));
+        const d = Math.round(7  * _easeOutCubic(t));
+        el.textContent = h + '/' + d;
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ── 3-MINUTE GUIDED BREATH SESSION (panel-wellness) ──────────
+    // Uses 4-7-8 method: 4s inhale, 7s hold, 8s exhale. Repeats for
+    // 3 minutes or until the panel changes. Phase text + countdown
+    // update in sync with the CSS keyframe animation.
+    const _BREATH_TOTAL_SEC = 180;
+    let   _breathTimer = null;
+    let   _breathStart = 0;
+    function _startBreathSession() {
+      const phaseEl = document.getElementById('breath-phase');
+      const timerEl = document.getElementById('breath-timer');
+      if (!phaseEl || !timerEl) return;
+      _breathStart = Date.now();
+      timerEl.textContent = '3:00';
+      phaseEl.textContent = 'BREATHE IN';
+      // Uncomment if audio file is staged:
+      // const audio = document.getElementById('breath-audio');
+      // if (audio) { audio.volume = (currentSide === 'R') ? 0 : 0.4; audio.play().catch(()=>{}); }
+
+      if (_breathTimer) clearInterval(_breathTimer);
+      _breathTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - _breathStart) / 1000);
+        const remaining = Math.max(0, _BREATH_TOTAL_SEC - elapsed);
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        timerEl.textContent = m + ':' + (s < 10 ? '0' + s : s);
+        // Phase changes every 19 sec cycle: 0-3s inhale, 4-10s hold, 11-18s exhale
+        const cyclePos = elapsed % 19;
+        let phase;
+        if      (cyclePos < 4)  phase = 'BREATHE IN';
+        else if (cyclePos < 11) phase = 'HOLD';
+        else                    phase = 'BREATHE OUT';
+        phaseEl.textContent = phase;
+        if (remaining <= 0) {
+          phaseEl.textContent = 'COMPLETE';
+          clearInterval(_breathTimer);
+          _breathTimer = null;
+        }
+      }, 250);
+    }
+    function _stopBreathSession() {
+      if (_breathTimer) { clearInterval(_breathTimer); _breathTimer = null; }
+      // const audio = document.getElementById('breath-audio');
+      // if (audio) { audio.pause(); audio.currentTime = 0; }
+    }
+
+    // ── DEMO CONTROLS ────────────────────────────────────────────
+    // Skip / back / pause via keyboard or click. Useful for IT demos.
+    let _rotationPaused = false;
+
+    function advancePanel() {
+      if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+      nextPanel();
+      _flashControl('NEXT');
+    }
+    function backPanel() {
+      if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+      curIdx = (curIdx - 2 + panels.length) % panels.length;
+      nextPanel();
+      _flashControl('BACK');
+    }
+    function togglePauseRotation() {
+      _rotationPaused = !_rotationPaused;
+      if (_rotationPaused) {
+        if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+        _flashControl('PAUSED');
+      } else {
+        const name = panels[curIdx].dataset.panel;
+        curTimer = setTimeout(nextPanel, durations[name] || 18000);
+        _flashControl('RESUMED');
+      }
+    }
+
+    // Brief on-screen indicator so Tevin can see his input registered
+    function _flashControl(label) {
+      let el = document.getElementById('demo-flash');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'demo-flash';
+        el.style.cssText = 'position:fixed;bottom:12vh;left:50%;transform:translateX(-50%);' +
+          'background:rgba(198,156,60,0.95);color:#0C3853;font-family:Consolas,monospace;' +
+          'font-weight:700;letter-spacing:0.18em;font-size:0.95vw;padding:0.8vh 1.5vw;' +
+          'border-radius:4px;z-index:200;opacity:0;transition:opacity 0.25s;pointer-events:none;';
+        document.body.appendChild(el);
+      }
+      el.textContent = label;
+      el.style.opacity = '1';
+      clearTimeout(el._fadeTimer);
+      el._fadeTimer = setTimeout(() => { el.style.opacity = '0'; }, 900);
+    }
+    function initRotation() {
+      allPanels = Array.from(document.querySelectorAll('.panel[data-panel]'));
+      panels = allPanels.filter(p => p.dataset.side === currentSide || p.dataset.side === 'both');
+      // Hide panels not in this side's set entirely (no opacity flicker)
+      allPanels.forEach(p => {
+        if (panels.includes(p)) p.style.display = '';
+        else p.style.display = 'none';
+      });
+      // On Right TV, drop the "Floor Spaces" panel if no spaces are configured
+      const spaces = panels.find(p => p.dataset.panel === 'spaces');
+      if (spaces && (!deviceInfo.floor_spaces || deviceInfo.floor_spaces.length === 0)) {
+        spaces.style.display = 'none';
+        panels = panels.filter(p => p !== spaces);
+      }
+      buildDots();
+      setActive(0);
+      const firstName = panels[0]?.dataset.panel;
+      curTimer = setTimeout(nextPanel, durations[firstName] || 18000);
+
+      // v1.22 preview hook: deep-link to a panel via #panel-name URL hash.
+      // Harmless in production (no hash on normal Edge launch).
+      if (window.location.hash) {
+        const target = window.location.hash.slice(1);
+        const idx = panels.findIndex(p => p.dataset.panel === target);
+        if (idx >= 0) {
+          setTimeout(() => {
+            if (curTimer) clearTimeout(curTimer);
+            curIdx = idx;
+            setActive(curIdx);
+            _onPanelEnter(target);
+            curTimer = setTimeout(nextPanel, durations[target] || 18000);
+          }, 1500);
+        }
+      }
+    }
+
+    // ── FOOTER AFFIRMATIONS ─────────────────────────────────────
+    const affirmations = [
+      'Your recovery begins here.',
+      'You are in good company - nearly 100,000 patients treated.',
+      'Recovery is a journey. Today is a step.',
+      'You belong here.',
+      'Healing happens one day at a time.',
+      'Comprehensive care. Compassionate community.',
+      'Reach out - staff is here to help.',
+      'Recovery is possible. You are not alone.',
+      'Every day in recovery is a victory worth celebrating.',
+      'Connection is the opposite of addiction. Welcome to community.',
+      'Today, choose one small step forward.',
+      'You are stronger than the moment that brought you here.'
+    ];
+    let affIdx = 0;
+    function rotateFooterAffirmation() {
+      const el = document.getElementById('footer-affirm');
+      el.style.opacity = '0';
+      setTimeout(() => {
+        affIdx = (affIdx + 1) % affirmations.length;
+        el.textContent = affirmations[affIdx];
+        el.style.opacity = '1';
+      }, 1000);
+    }
+    setInterval(rotateFooterAffirmation, 12000);
+
+    const bigAffirmations = [
+      'Recovery is a journey. Today is a step.',
+      'You belong here.',
+      'Healing happens one day at a time.',
+      'You are not alone.',
+      'Every day in recovery matters.',
+      'Connection is the opposite of addiction.',
+      'Today, choose one small step forward.',
+      'You are stronger than the moment that brought you here.',
+      'Your recovery begins here.'
+    ];
+    let bigAffIdx = 0;
+    function rotateBigAffirmation() {
+      const el = document.getElementById('affirm-text');
+      if (!el) return;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        bigAffIdx = (bigAffIdx + 1) % bigAffirmations.length;
+        el.textContent = bigAffirmations[bigAffIdx];
+        el.style.opacity = '1';
+      }, 600);
+    }
+    setInterval(rotateBigAffirmation, 9000);
+
+    // ── AUDIO ROUTING ──
+    // Right TV plays the brand-video audio ANYTIME; Left TV stays muted so the two
+    // screens in a nursing room don't echo each other. The brand video is the only
+    // audio source -- the TikTok/Facebook panels are curated, silent cards.
+    function videoShouldBeMuted() { return (currentSide === 'L'); }
+
+    // ── VIDEO STREAM (yt-dlp pipeline shared with Work Flex) ──
+    async function loadVideoSource() {
+      const video = document.getElementById('featured-video');
+      const placeholder = document.getElementById('video-placeholder');
+      try {
+        const res = await fetch('videos.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data && Array.isArray(data.videos) && data.videos.length > 0) {
+          const pick = data.videos[Math.floor(Math.random() * data.videos.length)];
+          if (pick.stream_url) {
+            video.src = pick.stream_url;
+            video.style.display = 'block';
+            placeholder.style.display = 'none';
+            // Right TV plays the brand-video sound; Left TV stays muted. Only START the
+            // clip if the video panel is actually on-screen -- otherwise just stage the
+            // source paused, so it never plays hidden (no startup / 30-min-refresh audio
+            // bleed). The video-panel enter hook starts it from the beginning.
+            video.muted = videoShouldBeMuted();
+            var _vp = document.querySelector('.panel[data-panel="video"]');
+            if (_vp && _vp.classList.contains('active')) {
+              video.currentTime = 0;
+              video.onended = _videoEnded;                  // advance the instant the clip finishes (plays in full)
+              video.onerror = function () { _videoEnded(); }; // a broken stream shouldn't freeze the panel
+              video.play().catch(() => {});
+            } else { try { video.pause(); } catch (e) {} }
+            return;
+          }
+        }
+      } catch (e) { /* silent */ }
+      // No playable source -> show the placeholder and don't linger on it.
+      video.style.display = 'none';
+      placeholder.style.display = 'flex';
+      var _vpns = document.querySelector('.panel[data-panel="video"]');
+      if (_vpns && _vpns.classList.contains('active') && !_rotationPaused) {
+        if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+        curTimer = setTimeout(nextPanel, 6000);
+      }
+    }
+
+    // ── LIVE WEATHER (Open-Meteo, Greenville SC -- free, no API key) ──
+    // TVs reach the internet over RCA-Guest. Soft-fails: on any error the
+    // last-good values (or the "--" placeholders) stay put -- never shows an
+    // error on a patient screen. Refreshes on load, every 20 min, and each
+    // time the TODAY panel rotates in.
+    const WX_URL = 'https://api.open-meteo.com/v1/forecast'
+      + '?latitude=34.8526&longitude=-82.3940'
+      + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,uv_index_max'
+      + '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=4';
+    const _WX_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    function _wxDesc(code) {
+      const m = {
+        0:['Clear','☀️'], 1:['Mostly Sunny','🌤️'], 2:['Partly Cloudy','⛅'], 3:['Cloudy','☁️'],
+        45:['Fog','🌫️'], 48:['Fog','🌫️'],
+        51:['Light Drizzle','🌦️'], 53:['Drizzle','🌦️'], 55:['Drizzle','🌦️'],
+        56:['Icy Drizzle','🌧️'], 57:['Icy Drizzle','🌧️'],
+        61:['Light Rain','🌧️'], 63:['Rain','🌧️'], 65:['Heavy Rain','🌧️'],
+        66:['Icy Rain','🌧️'], 67:['Icy Rain','🌧️'],
+        71:['Light Snow','❄️'], 73:['Snow','❄️'], 75:['Heavy Snow','❄️'], 77:['Snow','❄️'],
+        80:['Showers','🌦️'], 81:['Showers','🌦️'], 82:['Heavy Showers','⛈️'],
+        85:['Snow Showers','🌨️'], 86:['Snow Showers','🌨️'],
+        95:['Thunderstorm','⛈️'], 96:['Thunderstorm','⛈️'], 99:['Thunderstorm','⛈️']
+      };
+      return m[code] || ['', '🌤️'];
+    }
+    function _wxClock(iso) {            // "2026-06-01T06:12" -> "6:12 AM"
+      const d = new Date(iso); if (isNaN(d.getTime())) return '--';
+      let h = d.getHours(); const mn = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (h === 0) h = 12;
+      return h + ':' + (mn < 10 ? '0' + mn : mn) + ' ' + ap;
+    }
+    function _wxSet(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+    async function loadWeather() {
+      try {
+        const res = await fetch(WX_URL, { cache: 'no-store' });
+        if (!res.ok) return;
+        const d  = await res.json();
+        const c  = d.current || {};
+        const dy = d.daily   || {};
+        const desc = _wxDesc(c.weather_code);
+        if (c.temperature_2m != null)        _wxSet('weather-temp',  Math.round(c.temperature_2m) + '°');
+        if (desc[0])                         _wxSet('weather-cond',  desc[0]);
+        if (c.apparent_temperature != null)  _wxSet('weather-feels', 'Feels like ' + Math.round(c.apparent_temperature) + '°');
+        if (c.relative_humidity_2m != null)  _wxSet('weather-hum',   Math.round(c.relative_humidity_2m) + '%');
+        if (c.wind_speed_10m != null)        _wxSet('weather-wind',  Math.round(c.wind_speed_10m) + ' mph');
+        if (dy.temperature_2m_max) _wxSet('weather-hi', Math.round(dy.temperature_2m_max[0]) + '°');
+        if (dy.temperature_2m_min) _wxSet('weather-lo', Math.round(dy.temperature_2m_min[0]) + '°');
+        if (dy.uv_index_max)                 _wxSet('weather-uv',   Math.round(dy.uv_index_max[0]));
+        if (dy.precipitation_probability_max) _wxSet('weather-rain', Math.round(dy.precipitation_probability_max[0]) + '%');
+        if (dy.sunrise) _wxSet('weather-sunrise', _wxClock(dy.sunrise[0]));
+        if (dy.sunset)  _wxSet('weather-sunset',  _wxClock(dy.sunset[0]));
+        // 3-day outlook (tomorrow + next two)
+        const fc = document.getElementById('weather-forecast');
+        if (fc && dy.time) {
+          let html = '';
+          for (let i = 1; i <= 3 && i < dy.time.length; i++) {
+            const dd = new Date(dy.time[i] + 'T12:00:00');
+            const nm = _WX_DAYS[dd.getDay()] || '';
+            const w  = _wxDesc(dy.weather_code ? dy.weather_code[i] : 0);
+            const hi = Math.round(dy.temperature_2m_max[i]);
+            const lo = Math.round(dy.temperature_2m_min[i]);
+            const rn = dy.precipitation_probability_max ? Math.round(dy.precipitation_probability_max[i]) : 0;
+            html += '<div class="wf-day">'
+                  +   '<span class="wf-icon">' + w[1] + '</span>'
+                  +   '<span class="wf-dayname">' + nm + '</span>'
+                  +   '<span class="wf-hilo"><b>' + hi + '°</b> / ' + lo + '°</span>'
+                  +   '<span class="wf-rain">' + rn + '% rain</span>'
+                  + '</div>';
+          }
+          if (html) fc.innerHTML = html;
+        }
+      } catch (e) { /* offline -> keep last-good values, never error on screen */ }
+    }
+
+    // ── TODAY AT A GLANCE — live pathway schedule ──────────────
+    const SCHEDULE_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    let _scheduleData = null;
+
+    function _timeToMin(s) {
+      if (!s) return 0;
+      const parts = s.split(':');
+      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+    function _minToDisplay(min) {
+      let h = Math.floor(min / 60); const m = min % 60;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (h === 0) h = 12;
+      return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
+    }
+    function _escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    }
+
+    async function loadSchedule() {
+      try {
+        // Which pathway is this TV? (Fresh Start / Balance) -- comes from device-info.json's
+        // `pathway` field (same source Update-Schedule.ps1 uses). Cafeteria/Wayfinding/Admin
+        // have no pathway -> show the fallback.
+        let pathway = (deviceInfo && deviceInfo.pathway) ? deviceInfo.pathway : '';
+        if (!pathway) {
+          // device-info may not have loaded yet on the first call -- read it directly
+          try {
+            const di = await fetch('device-info.json?t=' + Date.now(), { cache: 'no-store' });
+            if (di.ok) { const info = await di.json(); pathway = info.pathway || ''; }
+          } catch (e) {}
+        }
+        const p = String(pathway).toLowerCase();
+        let file = null;
+        if (p.indexOf('fresh') >= 0)        file = 'freshstart.json';
+        else if (p.indexOf('balance') >= 0) file = 'balance.json';
+        if (!file) { renderSchedule(); return; }   // no pathway here -> fallback, not a stuck "Loading..."
+
+        // Read the pathway schedule straight from the PUBLIC repo over HTTPS. The kiosks'
+        // Edge can't reliably read C:\Signage\schedule.json over file:// (returns status 0),
+        // but HTTPS works fine -- same path as the live weather and the alert overlay. The
+        // file IS already {pathway, entries:[{time,day,activity}]}, so no transform needed.
+        // (The Update-Schedule.ps1 puller still runs as a warm local cache; the page no longer needs it.)
+        const res = await fetch('https://raw.githubusercontent.com/twardlawrca/grv-signage-data/main/' + file + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) { renderSchedule(); return; }
+        _scheduleData = await res.json();
+        renderSchedule();
+      } catch (e) { renderSchedule(); /* offline/parse error -> fallback, never a stuck "Loading..." */ }
+    }
+
+    function renderSchedule() {
+      const rowsEl    = document.getElementById('glance-rows');
+      const pathwayEl = document.getElementById('glance-pathway');
+      const asofEl    = document.getElementById('glance-asof');
+      if (!rowsEl) return;
+
+      if (!_scheduleData || !Array.isArray(_scheduleData.entries) || _scheduleData.entries.length === 0) {
+        rowsEl.innerHTML = '<div class="glance-row"><div class="glance-time">--</div><div class="glance-event">Schedule will be posted here</div></div>';
+        return;
+      }
+
+      const now = new Date();
+      const today = SCHEDULE_DAYS[now.getDay()];
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      // Filter today + sort by time
+      const todayEntries = _scheduleData.entries
+        .filter(e => e.day === today)
+        .sort((a, b) => _timeToMin(a.time) - _timeToMin(b.time));
+
+      // Dedupe consecutive identical activities (collapse 30-min slots into ranges)
+      const collapsed = [];
+      for (const e of todayEntries) {
+        const last = collapsed[collapsed.length - 1];
+        if (last && last.activity === e.activity) {
+          last.endTime = e.time;
+        } else {
+          collapsed.push({ time: e.time, endTime: e.time, activity: e.activity });
+        }
+      }
+
+      // Find current (latest entry whose start time <= now)
+      let currentIdx = -1;
+      for (let i = 0; i < collapsed.length; i++) {
+        if (_timeToMin(collapsed[i].time) <= nowMin) currentIdx = i;
+        else break;
+      }
+
+      const current = currentIdx >= 0 ? collapsed[currentIdx] : null;
+      const upcoming = collapsed.slice(currentIdx + 1, currentIdx + 6);
+
+      if (pathwayEl) {
+        pathwayEl.textContent = (_scheduleData.pathway || '') + ' Pathway';
+      }
+
+      let html = '';
+      if (current) {
+        html += '<div class="glance-row glance-now">' +
+                  '<div class="glance-time">NOW</div>' +
+                  '<div class="glance-event">' + _escHtml(current.activity) + '</div>' +
+                '</div>';
+      }
+      for (const e of upcoming) {
+        html += '<div class="glance-row">' +
+                  '<div class="glance-time">' + _minToDisplay(_timeToMin(e.time)) + '</div>' +
+                  '<div class="glance-event">' + _escHtml(e.activity) + '</div>' +
+                '</div>';
+      }
+      if (!current && upcoming.length === 0) {
+        html = '<div class="glance-row"><div class="glance-time">--</div><div class="glance-event">No activities scheduled</div></div>';
+      }
+      rowsEl.innerHTML = html;
+
+      // As-of stamp (how stale is the bridge-pushed JSON)
+      if (asofEl && _scheduleData.generated_at) {
+        const gen = new Date(_scheduleData.generated_at);
+        if (!isNaN(gen.getTime())) {
+          const ageMin = Math.floor((Date.now() - gen.getTime()) / 60000);
+          let ageStr;
+          if      (ageMin < 1)   ageStr = 'just now';
+          else if (ageMin < 60)  ageStr = ageMin + ' min ago';
+          else if (ageMin < 1440) ageStr = Math.floor(ageMin / 60) + ' hr ago';
+          else                   ageStr = Math.floor(ageMin / 1440) + ' day(s) ago';
+          asofEl.textContent = 'Updated ' + ageStr;
+        }
+      }
+    }
+
+    // == GROUP / TREATMENT-TEAM REMINDERS (nursing only) =========
+    // When a clinical group / treatment team is ~15 min out (and again at
+    // start), pause the rotation, take over the screen, chime, and speak the
+    // announcement. Reads the same per-pathway _scheduleData the glance panel
+    // uses. Triggers on groups / meetings / treatment teams only (skips meals +
+    // free time). Yields to an active emergency alert. Tunables at the top.
+    (function(){
+      var LEAD_MIN  = 15;       // "coming up" heads-up, minutes before start
+      var HOLD_LEAD = 15000;    // ms the heads-up overlay stays up
+      var HOLD_NOW  = 25000;    // ms the "starting now" overlay stays up
+      var POLL_MS   = 20000;
+      var TRIGGER   = /\bgroup\b|\bmeeting\b|treatment team|core skills/i;  // clinical groups + teams
+
+      var ov, ebEl, cnEl, nmEl, ftEl, icEl, alertEl;
+      var fired = {}, firedDay = '', showing = false;
+
+      function _dayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+      function _loadFired(){
+        var dk=_dayKey();
+        if (firedDay!==dk){ firedDay=dk; fired={};
+          try{ var raw=localStorage.getItem('grpRemind:'+dk); if(raw) fired=JSON.parse(raw)||{}; }catch(e){}
+        }
+      }
+      function _saveFired(){ try{ localStorage.setItem('grpRemind:'+firedDay, JSON.stringify(fired)); }catch(e){} }
+
+      function _chime(){
+        try{
+          var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+          var ac=new AC(); if(ac.state==="suspended"){ ac.resume(); }
+          var t0=ac.currentTime;
+          [[660,0],[880,0.26]].forEach(function(p){
+            var o=ac.createOscillator(), g=ac.createGain();
+            o.type="sine"; o.frequency.value=p[0]; o.connect(g); g.connect(ac.destination);
+            var t=t0+p[1];
+            g.gain.setValueAtTime(0.0001,t);
+            g.gain.exponentialRampToValueAtTime(0.45,t+0.04);
+            g.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
+            o.start(t); o.stop(t+0.6);
+          });
+        }catch(e){}
+      }
+      var _gVoice=null;
+      function _pickVoice(){
+        try{
+          var vs=window.speechSynthesis.getVoices()||[];
+          if(!vs.length) return;
+          // prefer a LOCAL en-US voice (offline + clear on the kiosk); fall back to any English
+          var pref=vs.filter(function(v){return v.localService && /^en[-_]?US/i.test(v.lang);});
+          if(!pref.length) pref=vs.filter(function(v){return /^en/i.test(v.lang);});
+          if(pref.length) _gVoice=pref[0];
+        }catch(e){}
+      }
+      function _speak(text){
+        try{
+          if(!("speechSynthesis" in window)||!text) return;
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.resume();   // clears the Chromium "paused after idle" state on an all-day kiosk
+          if(!_gVoice) _pickVoice();
+          var u=new SpeechSynthesisUtterance(text); u.rate=0.9; u.pitch=1; u.volume=1;
+          if(_gVoice) u.voice=_gVoice;
+          window.speechSynthesis.speak(u);
+        }catch(e){}
+      }
+      function _pause(){
+        _rotationPaused = true;
+        if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+        var v=document.getElementById('featured-video'); if(v){ try{ v.pause(); }catch(e){} }
+      }
+      function _resume(){
+        _rotationPaused = false;
+        if (curTimer) { clearTimeout(curTimer); curTimer = null; }
+        try{ nextPanel(); }catch(e){}
+      }
+      function _hide(){
+        if (ov) ov.className='';
+        try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+        showing=false; _resume();
+      }
+      // returns true only if the takeover actually displayed (caller marks it fired)
+      function _show(kind, activity, minutes){
+        if (showing) return false;
+        if (alertEl && alertEl.classList.contains('show')) return false;   // emergency wins
+        if (!ov) return false;
+        showing=true; _pause();
+        if (kind==='now'){
+          ov.className='show mode-now';
+          if(icEl) icEl.innerHTML='&#128276;';
+          ebEl.textContent='HAPPENING NOW';
+          cnEl.textContent='Please head to your group';
+          ftEl.textContent='Attendance is part of your recovery.';
+          nmEl.textContent=activity;
+        } else {
+          ov.className='show mode-soon';
+          if(icEl) icEl.innerHTML='&#9201;';
+          ebEl.textContent='COMING UP';
+          cnEl.textContent='in '+minutes+' minute'+(minutes===1?'':'s');
+          ftEl.textContent='Please begin wrapping up.';
+          nmEl.textContent=activity;
+        }
+        _chime();
+        var phrase=(kind==='now')
+          ? (activity+' is starting now. Please head to your group.')
+          : (activity+' is coming up in '+minutes+' minute'+(minutes===1?'':'s')+'.');
+        setTimeout(function(){ _speak(phrase); }, 900);
+        setTimeout(function(){ _speak(phrase); }, 5200);
+        setTimeout(_hide, (kind==='now')?HOLD_NOW:HOLD_LEAD);
+        return true;
+      }
+      function _check(){
+        try{ window.speechSynthesis && window.speechSynthesis.resume(); }catch(e){}   // keep the speech engine warm
+        if (showing) return;
+        if (!_scheduleData || !Array.isArray(_scheduleData.entries)) return;
+        _loadFired();
+        var now=new Date(), today=SCHEDULE_DAYS[now.getDay()], nowMs=now.getTime(), seen={};
+        for (var i=0;i<_scheduleData.entries.length;i++){
+          var e=_scheduleData.entries[i];
+          if (!e || e.day!==today) continue;
+          var act=String(e.activity||'').trim();
+          if (!act || !TRIGGER.test(act)) continue;
+          var key=e.time+'|'+act; if (seen[key]) continue; seen[key]=1;
+          var mins=_timeToMin(e.time);
+          var start=new Date(now.getFullYear(),now.getMonth(),now.getDate(),Math.floor(mins/60),mins%60,0,0);
+          var delta=(start.getTime()-nowMs)/60000;   // minutes until start
+          fired[key]=fired[key]||{};
+          if (delta<=0.75 && delta>=-1.5 && !fired[key].now){
+            if (_show('now', act, 0)){ fired[key].now=1; _saveFired(); }
+            return;
+          }
+          if (delta>0.75 && delta<=LEAD_MIN && !fired[key].lead){
+            if (_show('soon', act, Math.max(1,Math.round(delta)))){ fired[key].lead=1; _saveFired(); }
+            return;
+          }
+        }
+      }
+      window.addEventListener('load', function(){
+        ov=document.getElementById('grvtv-group');
+        ebEl=document.getElementById('gg-eyebrow'); cnEl=document.getElementById('gg-count');
+        nmEl=document.getElementById('gg-name');    ftEl=document.getElementById('gg-foot');
+        icEl=document.getElementById('gg-icon');    alertEl=document.getElementById('grvtv-alert');
+        if(!ov) return;
+        try{ _pickVoice(); window.speechSynthesis.onvoiceschanged=_pickVoice; }catch(e){}
+        setTimeout(_check, 8000);
+        setInterval(_check, POLL_MS);
+      });
+    })();
+
+    // ── BOOTSTRAP ────────────────────────────────────────────────
+    (async () => {
+      await loadDeviceInfo();
+      await loadBootTime();
+      updateUptime();
+      setInterval(updateUptime, 30000);
+      initRotation();
+      loadVideoSource();
+      setInterval(loadVideoSource, 30 * 60 * 1000);  // re-pick + refresh every 30 min
+      loadSchedule();
+      setInterval(loadSchedule,   15 * 60 * 1000);   // pull fresh JSON every 15 min
+      setInterval(renderSchedule, 60 * 1000);        // re-render every minute so "NOW" advances
+      loadWeather();
+      setInterval(loadWeather,    20 * 60 * 1000);   // live weather refresh every 20 min
+    })();
+
+    // ── LOCKDOWN + DEMO INPUT ────────────────────────────────────
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      // Block inspector / view-source / print shortcuts
+      if (e.key === 'F12') { e.preventDefault(); return; }
+      if ((e.ctrlKey || e.metaKey) && ['u','U','s','S','p','P'].includes(e.key)) { e.preventDefault(); return; }
+
+      // Demo navigation (no modifier keys)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      switch (e.key) {
+        case 'ArrowRight': case ' ': case 'PageDown':
+          e.preventDefault(); advancePanel(); break;
+        case 'ArrowLeft':  case 'PageUp':
+          e.preventDefault(); backPanel(); break;
+        case 'p': case 'P':
+          e.preventDefault(); togglePauseRotation(); break;
+      }
+    });
+    // Click anywhere in the panel area to skip forward (useful when an IT tech walks up to a TV)
+    document.querySelector('.panel-area')?.addEventListener('click', advancePanel);
+  </script>
+<!-- ===== GROUP / TREATMENT-TEAM REMINDER TAKEOVER (nursing only; uses the same per-pathway schedule the glance panel reads) ===== -->
+<style>
+  #grvtv-group{position:fixed;inset:0;z-index:2147482000;display:none;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:6vh 6vw;
+    font-family:"Segoe UI",Arial,sans-serif;color:#fff;background:#0C3853;}
+  #grvtv-group.show{display:flex;}
+  #grvtv-group .gg-icon{font-size:7vw;line-height:1;margin-bottom:1vh;}
+  #grvtv-group .gg-eyebrow{font-size:2.8vw;letter-spacing:.32em;font-weight:800;text-transform:uppercase;color:#C69C3C;}
+  #grvtv-group .gg-count{font-size:2.3vw;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9;margin-top:1vh;}
+  #grvtv-group .gg-name{font-size:6.4vw;font-weight:900;line-height:1.04;margin:3.2vh 0;max-width:88vw;
+    animation:ggPulse 1.5s ease-in-out infinite;will-change:transform;}
+  #grvtv-group .gg-foot{font-size:2.5vw;font-weight:700;opacity:.92;}
+  /* "starting now" = high-energy RCA gold; "coming up" = calm RCA blue */
+  #grvtv-group.mode-now{background:#C69C3C;color:#0C3853;}
+  #grvtv-group.mode-now .gg-eyebrow{color:#0C3853;}
+  @keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+</style>
+<div id="grvtv-group">
+  <div class="gg-icon" id="gg-icon">&#128276;</div>
+  <div class="gg-eyebrow" id="gg-eyebrow">COMING UP</div>
+  <div class="gg-count" id="gg-count"></div>
+  <div class="gg-name" id="gg-name"></div>
+  <div class="gg-foot" id="gg-foot">Please head to your group.</div>
+</div>
+<!-- ===== end group reminder takeover ===== -->
+<!-- ===== FACILITY ALERT OVERLAY (drop-in; reads C:\Signage\alert.json, refreshed by GRVTV-Alert.ps1) ===== -->
+<style>
+  #grvtv-alert{position:fixed;inset:0;z-index:2147483000;display:none;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:5vh 6vw;
+    font-family:"Segoe UI",Arial,sans-serif;color:#fff;}
+  #grvtv-alert.show{display:flex;}
+  #grvtv-alert .ga-icon{font-size:11vw;line-height:1;margin-bottom:1vh;}
+  #grvtv-alert .ga-code{font-size:7vw;font-weight:900;letter-spacing:.04em;text-transform:uppercase;line-height:1.02;animation:gaBounce 1.1s ease-in-out infinite;will-change:transform;}
+  #grvtv-alert .ga-mean{font-size:3.4vw;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.92;margin-top:.5vh;}
+  #grvtv-alert .ga-msg{font-size:2.6vw;font-weight:600;max-width:84vw;line-height:1.35;margin-top:2.5vh;}
+  #grvtv-alert .ga-test{position:absolute;top:0;left:0;right:0;background:#ffd400;color:#171717;font-weight:900;
+    font-size:2.3vw;letter-spacing:.25em;text-align:center;padding:1.1vh 0;border-bottom:0.4vh solid #171717;display:none;}
+  #grvtv-alert .ga-test.show{display:block;}
+  /* RCA emergency codes -- the screen colour IS the code */
+  #grvtv-alert.lvl-red{background:#b00020;}
+  #grvtv-alert.lvl-blue{background:#0b4ea2;}
+  #grvtv-alert.lvl-orange{background:#c75000;}
+  #grvtv-alert.lvl-purple{background:#5a189a;}
+  #grvtv-alert.lvl-black{background:#161616;}
+  #grvtv-alert.lvl-shooter{background:#000;}
+  #grvtv-alert.lvl-shooter .ga-code{color:#ff3b30;}
+  #grvtv-alert.lvl-green{background:#1b7d3a;}
+  #grvtv-alert.lvl-yellow{background:#f2c200;color:#171717;}
+  #grvtv-alert.lvl-white{background:#f4f4f4;color:#171717;border:1.2vh solid #b00020;}
+  #grvtv-alert.lvl-info{background:#0a4d68;}
+  #grvtv-alert.lvl-allclear{background:#1b5e20;}
+  #grvtv-alert.pulse{animation:gaPulse 1s ease-in-out infinite alternate;}
+  @keyframes gaPulse{from{filter:brightness(1)}to{filter:brightness(1.5)}}
+  @keyframes gaBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+</style>
+<div id="grvtv-alert">
+  <div class="ga-test" id="ga-test">&#9888; TEST &middot; PLEASE DISREGARD &middot; TEST &#9888;</div>
+  <div class="ga-icon" id="ga-icon"></div>
+  <div class="ga-code" id="ga-code"></div>
+  <div class="ga-mean" id="ga-mean"></div>
+  <div class="ga-msg" id="ga-msg"></div>
+</div>
+<script>
+(function(){
+  // RCA emergency codes -- level -> label / meaning / colour class / pulse
+  var CODES={
+    red:     {label:"Code Red",       mean:"Fire",                    cls:"lvl-red",     pulse:1, def:"Please exit the facility by using the nearest stairwell."},
+    blue:    {label:"Code Blue",      mean:"Medical Emergency",       cls:"lvl-blue",    pulse:1, def:""},
+    orange:  {label:"Code Orange",    mean:"Psychiatric / Behavioral",cls:"lvl-orange",  pulse:1, def:""},
+    purple:  {label:"Code Purple",    mean:"Missing Person",          cls:"lvl-purple",  pulse:0, def:""},
+    shooter: {label:"Active Shooter", mean:"",                        cls:"lvl-shooter", pulse:1, def:""},
+    black:   {label:"Code Black",     mean:"Bomb Threat",             cls:"lvl-black",   pulse:1, def:""},
+    green:   {label:"Code Green",     mean:"Weather Emergency",       cls:"lvl-green",   pulse:0, def:"Move away from windows and await staff instructions."},
+    yellow:  {label:"Code Yellow",    mean:"Carbon Monoxide",         cls:"lvl-yellow",  pulse:0, def:"Move to fresh air and await the all-clear from staff."},
+    white:   {label:"Code White",     mean:"Disaster",                cls:"lvl-white",   pulse:0, def:"Please remain calm and follow staff instructions."},
+    info:    {label:"Notice",         mean:"",                        cls:"lvl-info",    pulse:0, def:""},
+    allclear:{label:"All Clear",      mean:"",                        cls:"lvl-allclear",pulse:0, def:"All clear. Normal activity may resume."}
+  };
+  var el=document.getElementById("grvtv-alert");
+  var _lastKey=null;
+
+  // ---- audio: DEFAULT SILENT. Sounds only if alert.json sets "sound":
+  //      "chime" | "speak" | "both". Plays ONCE per new alert (debounced by
+  //      level+updated_at), not on every 20s poll. Needs TV volume up. ----
+  function _chime(){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      var ac=new AC(); if(ac.state==="suspended"){ ac.resume(); }
+      var t0=ac.currentTime;
+      [[660,0],[880,0.26]].forEach(function(p){
+        var o=ac.createOscillator(), g=ac.createGain();
+        o.type="sine"; o.frequency.value=p[0]; o.connect(g); g.connect(ac.destination);
+        var t=t0+p[1];
+        g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(0.45,t+0.04);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
+        o.start(t); o.stop(t+0.6);
+      });
+    }catch(e){}
+  }
+  function _speak(text){
+    try{
+      if(!("speechSynthesis" in window)||!text) return;
+      window.speechSynthesis.cancel();
+      var say=function(){ var u=new SpeechSynthesisUtterance(text); u.rate=0.92; u.pitch=1; u.volume=1; window.speechSynthesis.speak(u); };
+      say(); setTimeout(say,3800);   // announce, then repeat once for emphasis
+    }catch(e){}
+  }
+  function _announce(c,a){
+    var p=["Attention.", (a.title||c.label)+"."];
+    if(c.mean) p.push(c.mean+".");
+    var m=a.message||c.def||""; if(m) p.push(m);
+    return p.join(" ");
+  }
+  function _alertSound(mode,c,a){
+    if(mode==="chime"||mode==="both") _chime();
+    if(mode==="speak"||mode==="both"){ setTimeout(function(){ _speak(_announce(c,a)); }, (mode==="both")?1000:0); }
+  }
+
+  function hide(){ el.className=""; _lastKey=null; try{ window.speechSynthesis&&window.speechSynthesis.cancel(); }catch(e){} }
+  async function check(){
+    try{
+      // Read the alert straight from the PUBLIC repo over HTTPS. The kiosk's Edge
+      // cannot reliably read C:\Signage\alert.json over file:// (returns status 0),
+      // but HTTPS works fine here (same path the live weather uses). No token needed
+      // for a public read; the GRVTV-Alert.ps1 puller is now just a warm local cache.
+      var r=await fetch("https://raw.githubusercontent.com/twardlawrca/grv-signage-data/main/alert.json?t="+Date.now(),{cache:"no-store"});
+      if(!r.ok){ hide(); return; }
+      var a=await r.json();
+      if(a&&a.active){
+        var c=CODES[(a.level||"info").toLowerCase()]||CODES.info;
+        document.getElementById("ga-icon").textContent=(c.cls==="lvl-allclear")?"✓":"⚠";
+        document.getElementById("ga-code").textContent=a.title||c.label;
+        document.getElementById("ga-mean").textContent=c.mean;
+        document.getElementById("ga-msg").textContent=a.message||c.def||"";
+        el.className="show "+c.cls+(c.pulse?" pulse":"");
+        document.getElementById("ga-test").className="ga-test"+(a.test?" show":"");  // TEST ribbon
+        var key=(a.level||"")+"|"+(a.updated_at||"");
+        var mode=(a.sound||"").toLowerCase();
+        if(key!==_lastKey && (mode==="chime"||mode==="speak"||mode==="both")) _alertSound(mode,c,a);
+        _lastKey=key;
+      } else { hide(); }
+    }catch(e){ /* transient error -> leave overlay as-is */ }
+  }
+  setInterval(check,20000); check();
+})();
+</script>
+<!-- ===== end facility alert overlay ===== -->
+<a href="../index.html" style="position:fixed;top:9px;left:9px;z-index:2147483600;background:rgba(12,56,83,.9);color:#fff;font:600 12px 'Segoe UI',Arial,sans-serif;padding:6px 13px;border-radius:7px;text-decoration:none;border:1px solid rgba(255,255,255,.25);">&#8249;&nbsp; Demo menu</a>
+<script>
+(function(){
+  var YT='https://www.youtube.com/embed/KMcTQ-6MNKU?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1&playsinline=1';
+  function stopAudio(active){
+    try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+    var vids=document.querySelectorAll('video');
+    for(var i=0;i<vids.length;i++){ var v=vids[i]; if(!active||!active.contains(v)){ try{v.pause();v.currentTime=0;}catch(e){} } }
+    var yt=document.getElementById('demo-yt');
+    if(yt){ var onVid=active&&active.contains(yt); if(!onVid && yt.src && yt.src.indexOf('youtube')>=0){ yt.src='about:blank'; } }
+  }
+  var last=null;
+  function onChange(){
+    var active=document.querySelector('.panel.active'); if(active===last) return; last=active;
+    stopAudio(active);
+    if(window._ytAdvTimer){ clearTimeout(window._ytAdvTimer); window._ytAdvTimer=null; }
+    var yt=document.getElementById('demo-yt');
+    if(yt && active && active.contains(yt)){
+      yt.src=YT;
+      // YT iframe never fires <video> 'ended', so the rotation would stall on the 5-min cap.
+      // Auto-advance after a taste of the brand video so the demo keeps flowing.
+      if(typeof advancePanel==='function'){ window._ytAdvTimer=setTimeout(function(){ try{advancePanel();}catch(e){} }, 55000); }
+    }
+  }
+  function mkbtn(txt,fn,side){ var b=document.createElement('button'); b.textContent=txt;
+    b.style.cssText='position:fixed;bottom:16px;'+side+':16px;z-index:2147483600;background:rgba(198,156,60,.96);'+
+      'color:#0C3853;border:none;border-radius:9px;font:800 15px \'Segoe UI\',Arial,sans-serif;padding:11px 20px;'+
+      'cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35);';
+    b.addEventListener('click',function(e){ e.stopPropagation(); try{fn();}catch(x){} }); document.body.appendChild(b); }
+  window.addEventListener('load',function(){
+    var area=document.querySelector('.panel-area')||document.body;
+    new MutationObserver(onChange).observe(area,{subtree:true,attributes:true,attributeFilter:['class']});
+    if(typeof advancePanel==='function') mkbtn('Next ›',advancePanel,'right');
+    if(typeof backPanel==='function') mkbtn('‹ Prev',backPanel,'left');
+    setTimeout(onChange,1200);
+  });
+})();
+</script>
+</body>
+</html>
