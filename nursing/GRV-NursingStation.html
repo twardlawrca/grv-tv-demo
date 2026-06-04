@@ -2359,10 +2359,22 @@
         try{
           var vs=window.speechSynthesis.getVoices()||[];
           if(!vs.length) return;
-          // prefer a LOCAL en-US voice (offline + clear on the kiosk); fall back to any English
-          var pref=vs.filter(function(v){return v.localService && /^en[-_]?US/i.test(v.lang);});
-          if(!pref.length) pref=vs.filter(function(v){return /^en/i.test(v.lang);});
-          if(pref.length) _gVoice=pref[0];
+          // Prefer a MODERN neural voice. Edge on Win11 exposes Microsoft "Natural"/"Online"
+          // voices (Aria, Jenny, Guy, ...) that sound far better than the old offline David/Zira.
+          // To change the voice: reorder WANT (first available wins). Run voice-audition.html on
+          // the kiosk to hear what's installed.
+          var WANT=['Aria','Jenny','Michelle','Ana','Emma','Ava','Sonia','Guy','Eric','Christopher','Andrew'];
+          var pick=null,i,j;
+          for(i=0;i<WANT.length&&!pick;i++)
+            for(j=0;j<vs.length&&!pick;j++)
+              if(vs[j].name.indexOf(WANT[i])>=0&&/^en/i.test(vs[j].lang)) pick=vs[j];
+          if(!pick) for(j=0;j<vs.length&&!pick;j++)        // any neural/online English voice
+            if(/natural|online/i.test(vs[j].name)&&/^en/i.test(vs[j].lang)) pick=vs[j];
+          if(!pick) for(j=0;j<vs.length&&!pick;j++)        // then any en-US ...
+            if(/^en[-_]?US/i.test(vs[j].lang)) pick=vs[j];
+          if(!pick) for(j=0;j<vs.length&&!pick;j++)        // ... then any English (last resort)
+            if(/^en/i.test(vs[j].lang)) pick=vs[j];
+          if(pick) _gVoice=pick;
         }catch(e){}
       }
       function _speak(text){
