@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RCA Greenville — Welcome Video</title>
+<style>
+  *{margin:0;box-sizing:border-box;}
+  html,body{height:100%;background:#071c2a;overflow:hidden;cursor:none;
+            font-family:Georgia,'Times New Roman',serif;}
+  #stage{position:fixed;inset:0;background:#071c2a;overflow:hidden;}
+  video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.001);}
+  video.kb{transition:transform 6.2s ease-out;transform:scale(1.075);}   /* slow Ken Burns push */
+  #fade{position:fixed;inset:0;background:#071c2a;opacity:0;transition:opacity .55s ease;pointer-events:none;z-index:6;}
+
+  /* ---- Title intro ---- */
+  #intro{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;
+         text-align:center;background:radial-gradient(ellipse at 50% 42%,#10384f 0%,#071c2a 72%);transition:opacity .9s ease;}
+  #intro.hide{opacity:0;pointer-events:none;}
+  #intro .l1{color:#fff;font-size:3.0vw;font-weight:600;letter-spacing:.16em;opacity:0;transform:translateY(20px);}
+  #intro .ln{height:2px;width:0;background:#C69C3C;margin:2.6vh 0;opacity:0;border-radius:2px;}
+  #intro .l2{color:#e9d3a0;font-size:1.6vw;letter-spacing:.46em;opacity:0;transform:translateY(14px);}
+  #intro .l3{color:#cfe0ea;font-size:1.55vw;font-style:italic;letter-spacing:.05em;margin-top:3.2vh;opacity:0;transform:translateY(14px);}
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+  @keyframes draw{to{opacity:1;width:24vw;}}
+  #intro.go .l1{animation:rise 1.3s .25s forwards cubic-bezier(.2,.7,.2,1);}
+  #intro.go .ln{animation:draw 1.2s 1.15s forwards cubic-bezier(.2,.7,.2,1);}
+  #intro.go .l2{animation:rise 1.2s 1.45s forwards cubic-bezier(.2,.7,.2,1);}
+  #intro.go .l3{animation:rise 1.3s 2.7s forwards cubic-bezier(.2,.7,.2,1);}
+
+  /* ---- Kinetic captions ---- */
+  #cap{position:fixed;left:0;right:0;bottom:13vh;z-index:5;text-align:center;padding:0 8vw;
+       text-shadow:0 2px 26px rgba(0,0,0,.82);pointer-events:none;}
+  #cap .t{color:#fff;font-size:3.1vw;font-weight:600;opacity:0;transform:translateY(22px);letter-spacing:.01em;}
+  #cap .u{height:2px;width:0;background:#C69C3C;margin:1.7vh auto 0;border-radius:2px;}
+  #cap .s{color:#e9d3a0;font-size:1.6vw;font-style:italic;letter-spacing:.06em;opacity:0;transform:translateY(14px);margin-top:1vh;}
+  #cap.show .t{animation:rise 1.0s .05s forwards cubic-bezier(.2,.7,.2,1);}
+  #cap.show .u{animation:cdraw 1.0s .65s forwards cubic-bezier(.2,.7,.2,1);}
+  #cap.show .s{animation:rise 1.0s .45s forwards cubic-bezier(.2,.7,.2,1);}
+  @keyframes cdraw{to{width:16vw;}}
+  #cap.out{opacity:0;transition:opacity .5s ease;}
+  #vig{position:fixed;left:0;right:0;bottom:0;height:38vh;z-index:4;pointer-events:none;
+       background:linear-gradient(to top,rgba(7,28,42,.62),transparent);}
+</style></head>
+<body>
+  <div id="stage"><video id="v" muted playsinline preload="auto"></video></div>
+  <div id="vig"></div>
+  <div id="fade"></div>
+  <div id="cap"><div class="t" id="capt"></div><div class="u"></div><div class="s" id="caps"></div></div>
+  <div id="intro">
+    <div class="l1">RECOVERY CENTERS OF AMERICA</div>
+    <div class="ln"></div>
+    <div class="l2">AT GREENVILLE</div>
+    <div class="l3">Ten Years of Saving Lives</div>
+  </div>
+<script>
+  var SEQ=[
+    {src:'01-sunrise.mp4',  t:'',                                     s:''},
+    {src:'02-entrance.mp4', t:'A place to begin again',               s:''},
+    {src:'03-aerial.mp4',   t:'Comprehensive care',                   s:'South Carolina Upstate'},
+    {src:'04-path.mp4',     t:'The journey forward',                  s:''},
+    {src:'05-seal.mp4',     t:'',                                     s:''}   // seal card carries its own line
+  ];
+  var v=document.getElementById('v'), fade=document.getElementById('fade'), intro=document.getElementById('intro'),
+      cap=document.getElementById('cap'), capt=document.getElementById('capt'), caps=document.getElementById('caps'), i=-1;
+  function kb(){ v.classList.remove('kb'); void v.offsetWidth; v.classList.add('kb'); }
+  function play(idx){
+    i=idx; var c=SEQ[i];
+    fade.style.opacity=1;
+    setTimeout(function(){
+      v.src=c.src; var p=v.play(); if(p&&p.catch)p.catch(function(){}); kb();
+      cap.className=''; void cap.offsetWidth;
+      if(c.t||c.s){ capt.textContent=c.t; caps.textContent=c.s;
+        setTimeout(function(){ cap.className='show'; }, 900); }
+      fade.style.opacity=0;
+    },550);
+  }
+  v.addEventListener('ended', function(){ play((i+1)%SEQ.length); });
+  v.addEventListener('error', function(){ setTimeout(function(){play((i+1)%SEQ.length);},400); });
+  v.addEventListener('timeupdate', function(){ if(v.duration && v.currentTime>v.duration-1.15 && cap.className.indexOf('show')>=0) cap.className='show out'; });
+  window.addEventListener('load', function(){
+    void intro.offsetWidth; intro.className='go';
+    setTimeout(function(){ intro.className='go hide'; play(0); }, 4400);   // intro plays, then the film begins
+  });
+</script>
+</body></html>
