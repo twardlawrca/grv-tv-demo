@@ -466,6 +466,9 @@
       margin-bottom: 3vh;
       filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
     }
+    /* Welcome screen = full-bleed cinematic film (covers header/footer; a safety alert at z-index 200 still overrides it) */
+    .panel-welcome { position: fixed; inset: 0; z-index: 80; padding: 0; background: #071c2a; overflow: hidden; }
+    #welcome-film { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
     .panel-welcome .tagline {
       font-size: 1.7vw; color: var(--gold-soft);
       font-style: italic; margin-top: 2vh; letter-spacing: 0.02em;
@@ -958,10 +961,7 @@
 
     <!-- WELCOME (both) -->
     <section class="panel panel-welcome" data-panel="welcome" data-side="both">
-      <img class="welcome-badge" src="Brand-Assets/rca-thumb-10yr-fixed.png" alt="Recovery Centers of America at Greenville">
-      <h1 class="panel-h1 big" id="welcome-headline">Welcome</h1>
-      <div class="panel-sub" id="welcome-subtitle">to Recovery Centers of America at Greenville</div>
-      <div class="tagline">"Your Recovery Begins Here"</div>
+      <iframe id="welcome-film" class="welcome-film" allow="autoplay" frameborder="0"></iframe>
     </section>
 
     <!-- MEET YOUR CASE MANAGEMENT TEAM (both) -->
@@ -1558,7 +1558,7 @@
 
     const durations = {
       trivia:    40000,  // Brain Break: 3 questions
-      welcome:   16000,
+      welcome:   35000,
       quote1:    14000,   // v1.22: oversized cinematic quote
       today:     22000,   // weather + glance both expanded -- more to read
       photo1:    16000,   // v1.22: ken-burns RCA Greenville campus
@@ -2656,6 +2656,20 @@
 })();
 </script>
 <!-- ===== end facility alert overlay ===== -->
+<script>
+/* Welcome film: load the cinematic film only while the welcome panel is active; unload otherwise (no background video decode). */
+(function(){
+  function init(){
+    var wp=document.querySelector('.panel-welcome'), fr=document.getElementById('welcome-film');
+    if(!wp||!fr) return;
+    function sync(){ var want=wp.classList.contains('active')?'/welcome/':'about:blank';
+      if((fr.getAttribute('src')||'about:blank')!==want) fr.setAttribute('src',want); }
+    new MutationObserver(sync).observe(wp,{attributes:true,attributeFilter:['class']});
+    sync();
+  }
+  if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
+})();
+</script>
 <a href="../index.html" style="position:fixed;top:9px;left:9px;z-index:2147483600;background:rgba(12,56,83,.9);color:#fff;font:600 12px 'Segoe UI',Arial,sans-serif;padding:6px 13px;border-radius:7px;text-decoration:none;border:1px solid rgba(255,255,255,.25);">&#8249;&nbsp; Demo menu</a>
 <script>
 (function(){
