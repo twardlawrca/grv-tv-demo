@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RCA Greenville Welcome &mdash; TV player (scheduled audio)</title>
+<style>
+  *{margin:0;box-sizing:border-box}html,body{height:100%;background:#000;overflow:hidden;cursor:none;font-family:Georgia,'Times New Roman',serif;}
+  #film{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+  #vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+       background:radial-gradient(ellipse at 50% 46%,transparent 54%,rgba(0,0,0,.46) 100%),
+                  linear-gradient(to top,rgba(4,16,24,.42) 0%,transparent 30%),linear-gradient(to bottom,rgba(4,16,24,.22) 0%,transparent 16%);}
+  #grain{position:fixed;top:-8%;left:-8%;width:116%;height:116%;z-index:1;pointer-events:none;opacity:.07;
+         background:url(grain.png) repeat;background-size:300px;animation:gr .5s steps(3) infinite;}
+  @keyframes gr{0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(-1%,2%)}}
+  #bug{position:fixed;right:3.2vw;bottom:5.4vh;width:12vw;max-width:230px;opacity:.88;z-index:6;filter:drop-shadow(0 2px 14px rgba(0,0,0,.82));}
+  #close{position:fixed;left:0;right:0;bottom:15vh;z-index:5;text-align:center;padding:0 8vw;opacity:0;transition:opacity 1.1s ease;
+         pointer-events:none;text-shadow:0 3px 30px rgba(0,0,0,.9);}
+  #close.show{opacity:1;}
+  #close .w{color:#fff;font-size:2.5vw;font-weight:600;letter-spacing:.05em;}
+  #close .u{height:2px;width:14vw;background:#C69C3C;margin:1.6vh auto;border-radius:2px;box-shadow:0 0 16px rgba(198,156,60,.55);}
+  #close .s{color:#e9d3a0;font-size:1.5vw;font-style:italic;letter-spacing:.06em;}
+  #badge{position:fixed;left:1.4vw;top:1.4vh;z-index:7;font-size:.95vw;color:#cfe0ea;background:rgba(4,14,22,.55);
+         padding:.5vh .9vw;border-radius:6px;font-style:italic;}
+  #tap{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;cursor:pointer;
+       background:radial-gradient(ellipse at 50% 45%,rgba(8,30,46,.35) 0%,rgba(4,14,22,.66) 80%);transition:opacity .5s;text-align:center;}
+  #tap.hide{opacity:0;pointer-events:none;}
+  #tap .t{color:#fff;font-size:1.7vw;letter-spacing:.1em;text-shadow:0 3px 26px rgba(0,0,0,.85);}
+  #tap .s{color:#cfe0ea;font-size:1vw;font-style:italic;margin-top:1.2vh;}
+</style></head>
+<body>
+  <video id="film" src="../welcome2-final/welcome-long-scored.mp4" muted playsinline preload="auto"></video>
+  <div id="vig"></div>
+  <div id="grain"></div>
+  <img id="bug" src="rca-seal-10yr.png" alt="">
+  <div id="close"><div class="w">Recovery Centers of America at Greenville</div><div class="u"></div><div class="s">Ten Years of Saving Lives</div></div>
+  <div id="badge">&#128263; muted</div>
+  <div id="tap"><div><div class="t">TAP TO PREVIEW THE SCHEDULE</div><div class="s">demo: plays with sound about once a minute &middot; otherwise silent</div></div></div>
+<script>
+  // ===== Scheduled audio: silent loop all day, full sound once every other operating hour =====
+  var OPEN_HOUR = 8, CLOSE_HOUR = 18;     // operating window (tweak per TV)
+  var DEMO = !/[?&]live/.test(location.search);   // default = demo cadence; add ?live for real hour schedule
+  var film=document.getElementById('film'), close=document.getElementById('close'),
+      badge=document.getElementById('badge'), tap=document.getElementById('tap');
+  var lastAudioKey=-1, unlocked=false, demoLoop=0;
+  function audioCycle(){
+    if(DEMO){ demoLoop++; return demoLoop % 3 === 0; }   // demo: full sound every 3rd loop (otherwise silent)
+    var h=new Date().getHours();
+    if(h<OPEN_HOUR||h>=CLOSE_HOUR) return false;       // outside hours: silent
+    if((h-OPEN_HOUR)%2!==0) return false;              // only every OTHER hour
+    if(h===lastAudioKey) return false;                 // once per audio-hour
+    lastAudioKey=h; return true;
+  }
+  function startCycle(){
+    var sound = audioCycle() && unlocked;
+    film.muted = !sound;
+    badge.innerHTML = sound ? '&#128266; playing with sound (scheduled)' : '&#128263; muted';
+    film.currentTime=0; var p=film.play(); if(p&&p.catch)p.catch(function(){ film.muted=true; film.play(); });
+  }
+  film.addEventListener('ended', startCycle);
+  film.addEventListener('timeupdate', function(){ var d=film.duration||62; close.className=(film.currentTime>d-3.4 && film.currentTime<d-0.15)?'show':''; });
+  function go(){ unlocked=true; tap.className='hide'; startCycle(); }
+  tap.addEventListener('click',go); tap.addEventListener('touchstart',go);
+  film.muted=true; film.play().catch(function(){});   // start silent immediately
+</script>
+</body></html>
