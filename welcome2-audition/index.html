@@ -5,52 +5,75 @@
 <style>
   *{margin:0;box-sizing:border-box}html,body{height:100%;background:#000;overflow:hidden;font-family:Georgia,'Times New Roman',serif;}
   #v{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;}
-  #shade{position:fixed;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(2,8,12,.78) 100%);z-index:1;pointer-events:none;}
-  #bar{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;gap:1.2vw;justify-content:center;align-items:stretch;
-       padding:2.2vh 2vw 3vh;flex-wrap:wrap;}
-  .pick{background:rgba(10,26,38,.72);border:1px solid rgba(198,156,60,.45);color:#eaf2f7;border-radius:10px;
-        padding:1.2vh 1.4vw;cursor:pointer;font-family:inherit;text-align:left;min-width:15vw;transition:all .25s ease;backdrop-filter:blur(4px);}
+  #shade{position:fixed;inset:0;background:linear-gradient(to bottom,transparent 52%,rgba(2,8,12,.82) 100%);z-index:1;pointer-events:none;}
+  #bar{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;gap:.7vw;justify-content:center;align-items:stretch;
+       padding:1.6vh 1.4vw 2.2vh;flex-wrap:wrap;}
+  .grp{display:flex;gap:.7vw;align-items:stretch;padding:0 .6vw;border-right:1px solid rgba(255,255,255,.12);}
+  .grp:last-of-type{border-right:none;}
+  .pick{background:rgba(10,26,38,.72);border:1px solid rgba(198,156,60,.40);color:#eaf2f7;border-radius:9px;
+        padding:.9vh 1vw;cursor:pointer;font-family:inherit;text-align:left;min-width:9.5vw;transition:all .2s ease;backdrop-filter:blur(4px);}
   .pick:hover{border-color:#C69C3C;background:rgba(16,40,58,.85);}
-  .pick.on{border-color:#C69C3C;background:rgba(198,156,60,.22);box-shadow:0 0 22px rgba(198,156,60,.35);}
-  .pick .n{display:block;font-size:1.25vw;font-weight:600;color:#fff;letter-spacing:.02em;}
-  .pick .d{display:block;font-size:.95vw;color:#cfe0ea;font-style:italic;margin-top:.4vh;}
+  .pick.on{border-color:#C69C3C;background:rgba(198,156,60,.24);box-shadow:0 0 20px rgba(198,156,60,.4);}
+  .pick .n{display:block;font-size:1.0vw;font-weight:600;color:#fff;letter-spacing:.01em;}
+  .pick .d{display:block;font-size:.78vw;color:#cfe0ea;font-style:italic;margin-top:.3vh;}
   #off{align-self:center;background:transparent;border:1px solid rgba(255,255,255,.25);color:#cfe0ea;border-radius:8px;
-       padding:1.1vh 1.1vw;cursor:pointer;font-family:inherit;font-size:1vw;}
+       padding:.9vh 1vw;cursor:pointer;font-family:inherit;font-size:.9vw;margin-left:.4vw;}
+  .lbl{position:absolute;top:-1.7vh;left:.6vw;font-size:.75vw;letter-spacing:.16em;color:rgba(198,156,60,.85);text-transform:uppercase;}
   #tap{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
-       background:radial-gradient(ellipse at 50% 45%,rgba(8,30,46,.4) 0%,rgba(3,10,16,.7) 80%);text-align:center;transition:opacity .6s;}
+       background:radial-gradient(ellipse at 50% 45%,rgba(8,30,46,.4) 0%,rgba(3,10,16,.72) 80%);text-align:center;transition:opacity .6s;}
   #tap.hide{opacity:0;pointer-events:none;}
   #tap .ic{font-size:6vw;line-height:1;text-shadow:0 3px 26px rgba(0,0,0,.85);}
   #tap .t{color:#fff;font-size:2vw;font-weight:600;letter-spacing:.14em;margin-top:1.6vh;text-shadow:0 3px 26px rgba(0,0,0,.85);}
   #tap .s{color:#cfe0ea;font-size:1.1vw;font-style:italic;margin-top:1vh;}
-  #cred{position:fixed;left:2vw;top:2vh;z-index:3;color:rgba(207,224,234,.6);font-size:.9vw;font-style:italic;
+  #cred{position:fixed;left:1.6vw;top:1.6vh;z-index:3;color:rgba(207,224,234,.55);font-size:.85vw;font-style:italic;
         text-shadow:0 2px 10px rgba(0,0,0,.8);pointer-events:none;}
+  #now{position:fixed;right:1.6vw;top:1.6vh;z-index:3;color:#e9d3a0;font-size:1vw;text-shadow:0 2px 10px rgba(0,0,0,.85);}
 </style></head>
 <body>
   <video id="v" src="welcome-cohesive.mp4" autoplay loop muted playsinline></video>
   <div id="shade"></div>
-  <audio id="a0" src="bathed.mp3" loop preload="auto"></audio>
-  <audio id="a1" src="ascending.mp3" loop preload="auto"></audio>
-  <audio id="a2" src="aurea.mp3" loop preload="auto"></audio>
-  <audio id="a3" src="awaken.mp3" loop preload="auto"></audio>
-  <div id="cred">All candidates: Kevin MacLeod &middot; CC BY 4.0 (free, commercial-safe)</div>
+  <audio id="a0" src="mountain.mp3"    loop preload="none"></audio>
+  <audio id="a1" src="inspiring.mp3"   loop preload="none"></audio>
+  <audio id="a2" src="corporate.mp3"   loop preload="none"></audio>
+  <audio id="a3" src="slomo.mp3"       loop preload="none"></audio>
+  <audio id="a4" src="future.mp3"      loop preload="none"></audio>
+  <audio id="a5" src="advertising.mp3" loop preload="none"></audio>
+  <audio id="a6" src="dramatic.mp3"    loop preload="none"></audio>
+  <audio id="a7" src="epic.mp3"        loop preload="none"></audio>
+  <audio id="a8" src="rock.mp3"        loop preload="none"></audio>
+  <div id="cred">Your Pixabay picks &middot; free, commercial-safe</div>
+  <div id="now">&nbsp;</div>
   <div id="bar">
-    <button class="pick" data-i="0"><span class="n">1 &middot; Bathed in the Light</span><span class="d">warm, uplifting &mdash; light theme</span></button>
-    <button class="pick" data-i="1"><span class="n">2 &middot; Ascending the Vale</span><span class="d">building cinematic journey</span></button>
-    <button class="pick" data-i="2"><span class="n">3 &middot; Aurea Carmina</span><span class="d">full epic / grand</span></button>
-    <button class="pick" data-i="3"><span class="n">4 &middot; And Awaken</span><span class="d">emotional build</span></button>
-    <button id="off">&#9834; sound off</button>
+    <div class="grp"><span class="lbl">Emotional</span>
+      <button class="pick" data-i="0" data-n="Mountain Path"><span class="n">Mountain Path</span><span class="d">beautiful, emotional piano</span></button>
+      <button class="pick" data-i="1" data-n="Inspiring Minimal"><span class="n">Inspiring Minimal</span><span class="d">uplifting, understated</span></button>
+      <button class="pick" data-i="2" data-n="Corporate"><span class="n">Corporate</span><span class="d">warm professional lift</span></button>
+    </div>
+    <div class="grp"><span class="lbl">Modern</span>
+      <button class="pick" data-i="3" data-n="Slomo"><span class="n">Slomo</span><span class="d">modern slow-mo beat</span></button>
+      <button class="pick" data-i="4" data-n="Future Design"><span class="n">Future Design</span><span class="d">modern, forward</span></button>
+      <button class="pick" data-i="5" data-n="Advertising"><span class="n">Advertising</span><span class="d">bright, commercial</span></button>
+    </div>
+    <div class="grp"><span class="lbl">Epic</span>
+      <button class="pick" data-i="6" data-n="Powerful Dramatic"><span class="n">Powerful Dramatic</span><span class="d">cinematic build</span></button>
+      <button class="pick" data-i="7" data-n="Epic Action"><span class="n">Epic Action</span><span class="d">big, triumphant</span></button>
+      <button class="pick" data-i="8" data-n="Action Rock"><span class="n">Action Rock</span><span class="d">driving, energetic</span></button>
+    </div>
+    <button id="off">&#9834; off</button>
   </div>
-  <div id="tap"><div class="ic">&#127925;</div><div class="t">TAP TO AUDITION</div><div class="s">then use the buttons to switch scores over the film</div></div>
+  <div id="tap"><div class="ic">&#127925;</div><div class="t">TAP TO AUDITION</div><div class="s">then click any track to hear it over the film &middot; emotional &rarr; modern &rarr; epic</div></div>
 <script>
-  var v=document.getElementById('v');
-  var auds=[0,1,2,3].map(function(i){return document.getElementById('a'+i);});
+  var v=document.getElementById('v'), now=document.getElementById('now');
+  var auds=[0,1,2,3,4,5,6,7,8].map(function(i){return document.getElementById('a'+i);});
   var picks=Array.prototype.slice.call(document.querySelectorAll('.pick'));
   var tap=document.getElementById('tap');
-  function highlight(i){ picks.forEach(function(b){ b.className = (parseInt(b.dataset.i)===i)?'pick on':'pick'; }); }
+  function highlight(i){ picks.forEach(function(b){ b.className=(parseInt(b.dataset.i)===i)?'pick on':'pick'; }); }
   function pick(i){
     auds.forEach(function(a,j){ if(j!==i){ try{a.pause();}catch(e){} } });
     try{ v.currentTime=0; }catch(e){}
-    if(i>=0){ var a=auds[i]; try{a.currentTime=0;}catch(e){} var p=a.play(); if(p&&p.catch)p.catch(function(){}); }
+    if(i>=0){ var a=auds[i]; try{a.currentTime=0;}catch(e){} var p=a.play(); if(p&&p.catch)p.catch(function(){});
+      now.textContent='♪ ' + picks[i].dataset.n; }
+    else { now.innerHTML='&nbsp;'; }
     var pv=v.play(); if(pv&&pv.catch)pv.catch(function(){});
     highlight(i);
   }
