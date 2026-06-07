@@ -38,6 +38,12 @@
   #open.go .l2{animation:rise 1.2s 1.55s forwards cubic-bezier(.2,.7,.2,1);}
   #open.go .l3{animation:rise 1.3s 2.8s forwards cubic-bezier(.2,.7,.2,1);}
 
+  /* REASON lines -- "why recovery matters", fade gently over the shots, never gating the film */
+  #reason{position:fixed;left:0;right:0;bottom:18vh;z-index:7;text-align:center;opacity:0;transform:translateY(14px);
+          transition:opacity .9s ease, transform .9s ease;pointer-events:none;}
+  #reason.show{opacity:1;transform:translateY(0);}
+  #reason span{color:#e9d3a0;font-style:italic;font-size:2.4vw;letter-spacing:.06em;text-shadow:0 3px 28px rgba(0,0,0,.92);}
+
   /* CLOSING lockup -- lands over the final walk-into-light shot, every loop */
   #close{position:fixed;left:0;right:0;bottom:15vh;z-index:7;text-align:center;padding:0 8vw;opacity:0;
          transition:opacity 1.1s ease;pointer-events:none;text-shadow:0 3px 30px rgba(0,0,0,.9);}
@@ -53,6 +59,7 @@
   <div id="vig"></div>
   <div id="grain"></div>
   <img id="bug" src="rca-lockup.png" alt="">
+  <div id="reason"><span></span></div>
   <div id="close"><div class="w">Recovery Centers of America at Greenville</div><div class="u"></div><div class="s">Ten Years of Saving Lives</div></div>
   <div id="open">
     <div class="l1">RECOVERY CENTERS OF AMERICA</div>
@@ -62,17 +69,33 @@
   </div>
 <script>
   var film=document.getElementById('film'), open=document.getElementById('open'),
-      close=document.getElementById('close'), bug=document.getElementById('bug');
+      close=document.getElementById('close'), bug=document.getElementById('bug'),
+      reason=document.getElementById('reason'), reasonT=reason.firstChild;
+  // "why recovery matters" -- timed to the diverse shots (self / family / community)
+  var CAPS=[
+    {a:6.55, b:8.45,  t:'For yourself.'},
+    {a:9.10, b:11.00, t:'For your family.'},
+    {a:14.05,b:16.15, t:'For each other.'}
+  ];
+  var curCap=-1;
   function startFilm(){ var p=film.play(); if(p&&p.catch)p.catch(function(){ setTimeout(startFilm,400); }); }
-  // closing lockup lands over the final shot of every loop (film is ~16.4s; forward-walk starts ~12.7s)
   film.addEventListener('timeupdate', function(){
-    var d=film.duration||16.4, t=film.currentTime;
-    if(t > d-3.6 && t < d-0.15){ close.className='show'; } else { close.className=''; }
+    var d=film.duration||19.5, t=film.currentTime;
+    // reason lines
+    var hit=-1;
+    for(var k=0;k<CAPS.length;k++){ if(t>=CAPS[k].a && t<=CAPS[k].b){ hit=k; break; } }
+    if(hit!==curCap){
+      curCap=hit;
+      if(hit>=0){ reasonT.textContent=CAPS[hit].t; reason.className='show'; }
+      else { reason.className=''; }
+    }
+    // closing brand lockup over the final shot
+    if(t > d-3.0 && t < d-0.15){ close.className='show'; } else { close.className=''; }
   });
   window.addEventListener('load', function(){
     startFilm();
     void open.offsetWidth; open.className='go';            // opening title rises over the sunrise
-    setTimeout(function(){ open.className='go hide'; bug.className='on'; }, 4200);  // clear to the film, bring up the corner bug
+    setTimeout(function(){ open.className='go hide'; bug.className='on'; }, 4400);  // clear to the film, bring up the corner bug
   });
 </script>
 </body></html>
