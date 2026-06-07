@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RCA Greenville &mdash; Pick a Score</title>
+<style>
+  *{margin:0;box-sizing:border-box}html,body{height:100%;background:#000;overflow:hidden;font-family:Georgia,'Times New Roman',serif;}
+  #v{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;}
+  #shade{position:fixed;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(2,8,12,.78) 100%);z-index:1;pointer-events:none;}
+  #bar{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;gap:1.2vw;justify-content:center;align-items:stretch;
+       padding:2.2vh 2vw 3vh;flex-wrap:wrap;}
+  .pick{background:rgba(10,26,38,.72);border:1px solid rgba(198,156,60,.45);color:#eaf2f7;border-radius:10px;
+        padding:1.2vh 1.4vw;cursor:pointer;font-family:inherit;text-align:left;min-width:15vw;transition:all .25s ease;backdrop-filter:blur(4px);}
+  .pick:hover{border-color:#C69C3C;background:rgba(16,40,58,.85);}
+  .pick.on{border-color:#C69C3C;background:rgba(198,156,60,.22);box-shadow:0 0 22px rgba(198,156,60,.35);}
+  .pick .n{display:block;font-size:1.25vw;font-weight:600;color:#fff;letter-spacing:.02em;}
+  .pick .d{display:block;font-size:.95vw;color:#cfe0ea;font-style:italic;margin-top:.4vh;}
+  #off{align-self:center;background:transparent;border:1px solid rgba(255,255,255,.25);color:#cfe0ea;border-radius:8px;
+       padding:1.1vh 1.1vw;cursor:pointer;font-family:inherit;font-size:1vw;}
+  #tap{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+       background:radial-gradient(ellipse at 50% 45%,rgba(8,30,46,.4) 0%,rgba(3,10,16,.7) 80%);text-align:center;transition:opacity .6s;}
+  #tap.hide{opacity:0;pointer-events:none;}
+  #tap .ic{font-size:6vw;line-height:1;text-shadow:0 3px 26px rgba(0,0,0,.85);}
+  #tap .t{color:#fff;font-size:2vw;font-weight:600;letter-spacing:.14em;margin-top:1.6vh;text-shadow:0 3px 26px rgba(0,0,0,.85);}
+  #tap .s{color:#cfe0ea;font-size:1.1vw;font-style:italic;margin-top:1vh;}
+  #cred{position:fixed;left:2vw;top:2vh;z-index:3;color:rgba(207,224,234,.6);font-size:.9vw;font-style:italic;
+        text-shadow:0 2px 10px rgba(0,0,0,.8);pointer-events:none;}
+</style></head>
+<body>
+  <video id="v" src="welcome-cohesive.mp4" autoplay loop muted playsinline></video>
+  <div id="shade"></div>
+  <audio id="a0" src="bathed.mp3" loop preload="auto"></audio>
+  <audio id="a1" src="ascending.mp3" loop preload="auto"></audio>
+  <audio id="a2" src="aurea.mp3" loop preload="auto"></audio>
+  <audio id="a3" src="awaken.mp3" loop preload="auto"></audio>
+  <div id="cred">All candidates: Kevin MacLeod &middot; CC BY 4.0 (free, commercial-safe)</div>
+  <div id="bar">
+    <button class="pick" data-i="0"><span class="n">1 &middot; Bathed in the Light</span><span class="d">warm, uplifting &mdash; light theme</span></button>
+    <button class="pick" data-i="1"><span class="n">2 &middot; Ascending the Vale</span><span class="d">building cinematic journey</span></button>
+    <button class="pick" data-i="2"><span class="n">3 &middot; Aurea Carmina</span><span class="d">full epic / grand</span></button>
+    <button class="pick" data-i="3"><span class="n">4 &middot; And Awaken</span><span class="d">emotional build</span></button>
+    <button id="off">&#9834; sound off</button>
+  </div>
+  <div id="tap"><div class="ic">&#127925;</div><div class="t">TAP TO AUDITION</div><div class="s">then use the buttons to switch scores over the film</div></div>
+<script>
+  var v=document.getElementById('v');
+  var auds=[0,1,2,3].map(function(i){return document.getElementById('a'+i);});
+  var picks=Array.prototype.slice.call(document.querySelectorAll('.pick'));
+  var tap=document.getElementById('tap');
+  function highlight(i){ picks.forEach(function(b){ b.className = (parseInt(b.dataset.i)===i)?'pick on':'pick'; }); }
+  function pick(i){
+    auds.forEach(function(a,j){ if(j!==i){ try{a.pause();}catch(e){} } });
+    try{ v.currentTime=0; }catch(e){}
+    if(i>=0){ var a=auds[i]; try{a.currentTime=0;}catch(e){} var p=a.play(); if(p&&p.catch)p.catch(function(){}); }
+    var pv=v.play(); if(pv&&pv.catch)pv.catch(function(){});
+    highlight(i);
+  }
+  picks.forEach(function(b){ b.addEventListener('click',function(){ pick(parseInt(b.dataset.i)); }); });
+  document.getElementById('off').addEventListener('click',function(){ pick(-1); });
+  function start(){ tap.className='hide'; pick(0); }
+  tap.addEventListener('click',start); tap.addEventListener('touchstart',start);
+  v.play().catch(function(){});
+</script>
+</body></html>
