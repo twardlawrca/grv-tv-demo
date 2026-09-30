@@ -6,3 +6,16 @@
   for = "/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Hosted videos the TV boards stream (campaign overlay `video` slides). Each file name is unique per version,
+# so the boards may keep a copy for a week instead of revalidating on every play (added 2026-09-30).
+# Replacing a video means a NEW file name, never an overwrite.
+[[headers]]
+  for = "/health/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+
+[[headers]]
+  for = "/rca/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
