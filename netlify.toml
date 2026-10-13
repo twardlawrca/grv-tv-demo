@@ -19,3 +19,9 @@
   for = "/rca/*"
   [headers.values]
     Cache-Control = "public, max-age=604800, immutable"
+
+# Cafeteria menu "Kitchen Moments" films (GRVTVMENU01 streams them; versioned names, never overwritten; added 2026-10-13).
+[[headers]]
+  for = "/menu-moments/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
